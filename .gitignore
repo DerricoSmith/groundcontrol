@@ -39,6 +39,10 @@ yarn-error.log*
 # local AI tooling config (not part of the product)
 .claude/
 
+# local dev database
+/prisma/*.db
+/prisma/*.db-journal
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

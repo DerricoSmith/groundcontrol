@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ArrowRight,
   Sunrise,
@@ -175,6 +176,12 @@ export default function ShowcasePage() {
           <LinkButton href="/morning-brief" className="bg-brand text-white hover:bg-brand-hover">
             Launch Demo <ArrowRight className="ml-1 h-4 w-4" />
           </LinkButton>
+          <p className="text-[12.5px] text-text-muted">
+            Prefer your own data saved for real?{" "}
+            <Link href="/signup" className="font-medium text-brand hover:text-brand-hover">
+              Create a free account
+            </Link>
+          </p>
         </SurfaceCard>
 
         <div className="mt-4">

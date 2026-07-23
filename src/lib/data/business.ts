@@ -12,7 +12,7 @@ export const dailyBrief = {
   chips: [
     { label: "Revenue up 18%", tone: "positive" as const },
     { label: "3 invoices overdue", tone: "danger" as const },
-    { label: "7 people waiting on you", tone: "warning" as const },
+    { label: "8 people waiting on you", tone: "warning" as const },
     { label: "2 warm leads", tone: "brand" as const },
     { label: "1 shipping issue", tone: "warning" as const },
   ],

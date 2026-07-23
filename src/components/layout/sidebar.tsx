@@ -3,13 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { Settings, LifeBuoy, ChevronsUpDown, ExternalLink } from "lucide-react";
+import { Settings, LifeBuoy, ChevronsUpDown, ExternalLink, LogOut } from "lucide-react";
 import { navItems } from "./nav-items";
 import { LogoMark } from "@/components/brand/logo-mark";
-import { founder } from "@/lib/data";
+import { logoutAction } from "@/lib/actions/auth-actions";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+interface FounderInfo {
+  name: string;
+  firstName: string;
+  business: string;
+  role: string;
+  avatarInitials: string;
+}
+
+export function Sidebar({ founder, isLive }: { founder: FounderInfo; isLive: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -55,6 +63,17 @@ export function Sidebar() {
         })}
       </nav>
 
+      {!isLive && (
+        <div className="px-3 pb-1">
+          <Link
+            href="/signup"
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand px-3 py-2.5 text-[13.5px] font-medium text-white hover:bg-brand-hover"
+          >
+            Sign up free
+          </Link>
+        </div>
+      )}
+
       <div className="space-y-0.5 px-3 pb-2 pt-3">
         <Link
           href="/showcase"
@@ -80,21 +99,42 @@ export function Sidebar() {
       </div>
 
       <div className="border-t border-sidebar-border p-3">
-        <button
-          onClick={() => toast("This is a demo profile — there's no real account behind it.")}
-          className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
-            {founder.avatarInitials}
+        {isLive ? (
+          <div className="flex items-center gap-2.5 rounded-xl p-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
+              {founder.avatarInitials}
+            </div>
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="truncate text-[13px] font-medium text-text-primary">{founder.name}</p>
+              <p className="truncate text-[12px] text-text-muted">
+                {founder.role}, {founder.business}
+              </p>
+            </div>
+            <button
+              onClick={() => logoutAction()}
+              aria-label="Sign out"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-black/[0.05] hover:text-text-primary dark:hover:bg-white/[0.06]"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
           </div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-[13px] font-medium text-text-primary">{founder.name}</p>
-            <p className="truncate text-[12px] text-text-muted">
-              {founder.role}, {founder.business}
-            </p>
-          </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-text-muted" />
-        </button>
+        ) : (
+          <button
+            onClick={() => toast("This is demo data — sign up to create a real profile.")}
+            className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left transition-colors hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
+              {founder.avatarInitials}
+            </div>
+            <div className="min-w-0 flex-1 leading-tight">
+              <p className="truncate text-[13px] font-medium text-text-primary">{founder.name}</p>
+              <p className="truncate text-[12px] text-text-muted">
+                {founder.role}, {founder.business} (demo)
+              </p>
+            </div>
+            <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+          </button>
+        )}
       </div>
     </aside>
   );

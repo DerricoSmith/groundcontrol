@@ -1,0 +1,166 @@
+// Ground Control — Prisma schema
+//
+// Local dev runs on SQLite (zero setup, no external account needed).
+// For production on Vercel, switch the datasource below to:
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")   // e.g. a Vercel Postgres / Neon connection string
+// then run `npx prisma migrate deploy`. The schema below intentionally avoids
+// SQLite-only or Postgres-only features so that switch is a two-line change.
+// See README.md for the full migration steps.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  workspace Workspace?
+}
+
+model Workspace {
+  id           String   @id @default(cuid())
+  name         String
+  businessName String
+  createdAt    DateTime @default(now())
+
+  ownerId String @unique
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  customers    Customer[]
+  invoices     Invoice[]
+  openLoops    OpenLoop[]
+  opportunities Opportunity[]
+  risks        Risk[]
+}
+
+model Customer {
+  id          String @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name              String
+  company           String?
+  avatarInitials    String
+  channel           String // Channel union, validated in app layer
+  status            String // CustomerStatus union
+  sentiment         String // Sentiment union
+  isVIP             Boolean
+  atRisk            Boolean
+  isOpportunity     Boolean
+  needsReply        Boolean
+  waitingOn         String? // "you" | "them" | null
+  ltv               Float
+  lastTouchAt       DateTime
+  location          String
+  email             String
+  tags              Json // string[]
+  relationshipSummary String
+  lastMessage       String
+  openIssue         String?
+  nextAction        String
+  suggestedReply    String
+  notes             String
+  revenueOpportunity Float?
+  timeline          Json // TimelineEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices  Invoice[]
+  openLoops OpenLoop[]
+  opportunities Opportunity[]
+  risks     Risk[]
+
+  @@index([workspaceId])
+}
+
+model Invoice {
+  id          String @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  client   String
+  amount   Float
+  issuedAt DateTime
+  dueAt    DateTime
+  status   String // InvoiceStatus union
+  channel  String // Channel union
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+}
+
+model OpenLoop {
+  id          String @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  title              String
+  type               String // LoopType union
+  source             String
+  priority           String // Priority union
+  dollarImpact       Float?
+  due                String // "today" | "tomorrow" | "this-week" | "waiting" | "someday"
+  dueLabel           String
+  recommendedAction  String
+  status             String @default("open") // "open" | "done" | "snoozed"
+  revenueTied        Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workspaceId])
+}
+
+model Opportunity {
+  id          String @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  title        String
+  customerName String
+  value        Float
+  confidence   String // "warm" | "hot" | "exploratory"
+  note         String
+  nextAction   String
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+}
+
+model Risk {
+  id          String @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  title             String
+  customerName      String
+  severity          String // "watch" | "elevated" | "critical"
+  note              String
+  recommendedAction String
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+}

@@ -181,7 +181,7 @@ export default function PricingPage() {
                 </ul>
 
                 <LinkButton
-                  href="/morning-brief"
+                  href="/signup"
                   className={cn(
                     "mt-6 justify-center",
                     tier.highlight ? "bg-brand text-white hover:bg-brand-hover" : ""
@@ -194,6 +194,14 @@ export default function PricingPage() {
             );
           })}
         </div>
+
+        <p className="mt-6 text-center text-[13px] text-text-secondary">
+          Just want to look around first?{" "}
+          <Link href="/morning-brief" className="font-medium text-brand hover:text-brand-hover">
+            View the live demo
+          </Link>{" "}
+          — no account needed.
+        </p>
 
         <div className="mx-auto mt-16 max-w-2xl">
           <h2 className="text-center font-serif text-[22px] font-medium text-text-primary">Questions, answered</h2>

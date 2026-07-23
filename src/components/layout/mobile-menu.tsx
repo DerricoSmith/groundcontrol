@@ -4,15 +4,23 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { Menu, Settings, LifeBuoy, ExternalLink } from "lucide-react";
+import { Menu, Settings, LifeBuoy, ExternalLink, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { navItems } from "./nav-items";
-import { founder } from "@/lib/data";
+import { logoutAction } from "@/lib/actions/auth-actions";
 import { cn } from "@/lib/utils";
 
-export function MobileMenu() {
+interface FounderInfo {
+  name: string;
+  firstName: string;
+  business: string;
+  role: string;
+  avatarInitials: string;
+}
+
+export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
@@ -69,17 +77,39 @@ export function MobileMenu() {
             <LifeBuoy className="h-5 w-5 text-text-muted" strokeWidth={2} /> Help &amp; support
           </button>
         </nav>
+
+        {!isLive && (
+          <div className="px-3 pb-1">
+            <Link
+              href="/signup"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center justify-center rounded-xl bg-brand px-3 py-3 text-[14.5px] font-medium text-white hover:bg-brand-hover"
+            >
+              Sign up free
+            </Link>
+          </div>
+        )}
+
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
               {founder.avatarInitials}
             </div>
-            <div className="min-w-0 leading-tight">
+            <div className="min-w-0 flex-1 leading-tight">
               <p className="truncate text-[13px] font-medium text-text-primary">{founder.name}</p>
               <p className="truncate text-[12px] text-text-muted">
-                {founder.role}, {founder.business}
+                {isLive ? founder.business : `${founder.role}, ${founder.business} (demo)`}
               </p>
             </div>
+            {isLive && (
+              <button
+                onClick={() => logoutAction()}
+                aria-label="Sign out"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-surface-soft"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </SheetContent>

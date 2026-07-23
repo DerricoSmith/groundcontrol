@@ -11,24 +11,24 @@ const workflows = navItems.filter((n) => n.href !== "/case-study");
 const buildNext = [
   {
     icon: Plug,
-    title: "Onboarding in under 3 minutes",
-    body: "A guided setup with native Shopify, Notion, Gmail, and Klaviyo connections — plus a public API and a Zapier integration so anything else can plug in without waiting on a native build.",
+    title: "Native integrations",
+    body: "Real Shopify, Notion, Gmail, and Klaviyo connections — plus a public API and a Zapier integration so anything else can plug in without waiting on a native build. Today every account starts from the same realistic seed data instead.",
   },
   {
     icon: ReceiptText,
-    title: "Pricing & packaging",
-    body: "A tiered plan that scales with how many revenue streams someone runs, not just seats — since a solo operator never adds a second seat.",
+    title: "Real billing",
+    body: "Stripe subscriptions wired to the three tiers below, priced around revenue streams instead of seats — since a solo operator never adds a second seat.",
     link: { href: "/pricing", label: "View pricing" },
   },
   {
     icon: Rocket,
-    title: "Persistent state",
-    body: "A real database so Done, Snooze, and notes survive a refresh — and so the brief can learn from what you actually act on.",
+    title: "Onboarding in under 3 minutes",
+    body: "A guided first-run flow that walks a new signup through connecting a real data source, so time-to-value is measured in minutes, not a seeded demo dataset.",
   },
   {
     icon: Sparkles,
     title: "A real language model",
-    body: "Swap the keyword-matched response engine for an LLM grounded in the same structured data, with the same restraint about not overstepping judgment.",
+    body: "Swap the keyword-matched response engine for an LLM grounded in each workspace's real data, with the same restraint about not overstepping judgment.",
   },
 ];
 
