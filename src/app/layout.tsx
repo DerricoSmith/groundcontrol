@@ -27,25 +27,25 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Ground Control",
-    template: "%s · Ground Control",
+    default: "Signal & State · Turn customer signals into action",
+    template: "%s · Signal & State",
   },
-  description: "A daily operating cockpit for solopreneurs.",
+  description: "Customer intelligence for growing B2B software companies, by Signal & State.",
   applicationName: "Ground Control",
-  authors: [{ name: "Derrico Smith" }],
-  creator: "Derrico Smith",
-  keywords: ["solopreneur", "operations", "ecommerce", "AI", "portfolio", "product design"],
+  authors: [{ name: "Signal & State" }],
+  creator: "Signal & State",
+  keywords: ["customer success", "customer intelligence", "churn risk", "renewals", "B2B SaaS"],
   openGraph: {
-    title: "Ground Control",
-    description: "A daily operating cockpit for solopreneurs.",
+    title: "Ground Control · Signal & State",
+    description: "Customer intelligence for growing B2B software companies, by Signal & State.",
     url: siteUrl,
     siteName: "Ground Control",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ground Control",
-    description: "A daily operating cockpit for solopreneurs.",
+    title: "Ground Control · Signal & State",
+    description: "Customer intelligence for growing B2B software companies, by Signal & State.",
   },
 };
 

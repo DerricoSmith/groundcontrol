@@ -68,6 +68,18 @@
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
 
+  /* Health scale — ordinal, never re-mapped per feature. See DESIGN_SYSTEM.md */
+  --color-health-strong: var(--health-strong);
+  --color-health-strong-soft: var(--health-strong-soft);
+  --color-health-stable: var(--health-stable);
+  --color-health-stable-soft: var(--health-stable-soft);
+  --color-health-watch: var(--health-watch);
+  --color-health-watch-soft: var(--health-watch-soft);
+  --color-health-at-risk: var(--health-at-risk);
+  --color-health-at-risk-soft: var(--health-at-risk-soft);
+  --color-health-critical: var(--health-critical);
+  --color-health-critical-soft: var(--health-critical-soft);
+
   --radius-sm: calc(var(--radius) * 0.55);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -90,14 +102,25 @@
   --text-muted: #667085;
   --border: #e4e7ec;
   --border-strong: #d0d5dd;
-  --brand: #635bff;
+  --brand: #4338ca;
   --brand-soft: #eef2ff;
-  --brand-hover: #5147e8;
+  --brand-hover: #3730a3;
   --brand-foreground: #ffffff;
   --accent-blue: #0ea5e9;
   --accent-green: #16a34a;
   --accent-amber: #f59e0b;
   --accent-red: #dc2626;
+
+  --health-strong: #15803d;
+  --health-strong-soft: #ecfdf3;
+  --health-stable: #0891b2;
+  --health-stable-soft: #ecfeff;
+  --health-watch: #b45309;
+  --health-watch-soft: #fffaeb;
+  --health-at-risk: #c2410c;
+  --health-at-risk-soft: #fff5ed;
+  --health-critical: #b91c1c;
+  --health-critical-soft: #fef3f2;
 
   --background-rgb: var(--background);
   --foreground: var(--text-primary);
@@ -157,14 +180,25 @@
   --text-muted: #94a3b8;
   --border: #263244;
   --border-strong: #334155;
-  --brand: #8b7cff;
-  --brand-soft: rgba(139, 124, 255, 0.14);
-  --brand-hover: #a397ff;
+  --brand: #818cf8;
+  --brand-soft: rgba(129, 140, 248, 0.14);
+  --brand-hover: #a5b4fc;
   --brand-foreground: #14102b;
   --accent-blue: #38bdf8;
   --accent-green: #22c55e;
   --accent-amber: #fbbf24;
   --accent-red: #f87171;
+
+  --health-strong: #4ade80;
+  --health-strong-soft: rgba(74, 222, 128, 0.12);
+  --health-stable: #22d3ee;
+  --health-stable-soft: rgba(34, 211, 238, 0.12);
+  --health-watch: #fbbf24;
+  --health-watch-soft: rgba(251, 191, 36, 0.12);
+  --health-at-risk: #fb923c;
+  --health-at-risk-soft: rgba(251, 146, 60, 0.12);
+  --health-critical: #f87171;
+  --health-critical-soft: rgba(248, 113, 113, 0.12);
 
   --foreground: var(--text-primary);
   --card: var(--surface-elevated);

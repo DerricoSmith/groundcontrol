@@ -19,7 +19,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
-        <Link href="/showcase" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <LogoMark size={26} />
           <span className="text-[14px] font-semibold text-text-primary">Ground Control</span>
         </Link>
@@ -27,12 +27,12 @@ export default function SignupPage() {
       </header>
 
       <main className="mx-auto flex max-w-md flex-col px-4 pb-24 pt-10 sm:px-6">
-        <p className="text-center text-[13px] font-semibold uppercase tracking-[0.08em] text-brand">Create your account</p>
+        <p className="text-center text-[13px] font-semibold uppercase tracking-[0.08em] text-brand">Create your organization</p>
         <h1 className="mt-3 text-center font-serif text-[28px] font-medium tracking-tight text-text-primary">
-          Set up your cockpit.
+          Set up Ground Control.
         </h1>
         <p className="mt-2 text-center text-[13.5px] text-text-secondary">
-          Your account comes pre-loaded with a realistic sample business so you can see it working immediately.
+          This creates a new, isolated organization with you as the owner. Customer data import comes next.
         </p>
 
         <SurfaceCard className="mt-7 p-6">
@@ -44,16 +44,16 @@ export default function SignupPage() {
               <Input id="name" name="name" placeholder="Jordan Reyes" required className="border-border bg-surface" />
             </div>
             <div>
-              <label htmlFor="businessName" className="mb-1.5 block text-[12.5px] font-medium text-text-secondary">
-                Business name
+              <label htmlFor="organizationName" className="mb-1.5 block text-[12.5px] font-medium text-text-secondary">
+                Organization name
               </label>
-              <Input id="businessName" name="businessName" placeholder="Reyes Studio" required className="border-border bg-surface" />
+              <Input id="organizationName" name="organizationName" placeholder="Reyes Software Co." required className="border-border bg-surface" />
             </div>
             <div>
               <label htmlFor="email" className="mb-1.5 block text-[12.5px] font-medium text-text-secondary">
-                Email
+                Work email
               </label>
-              <Input id="email" name="email" type="email" placeholder="you@example.com" required className="border-border bg-surface" />
+              <Input id="email" name="email" type="email" placeholder="you@company.com" required className="border-border bg-surface" />
             </div>
             <div>
               <label htmlFor="password" className="mb-1.5 block text-[12.5px] font-medium text-text-secondary">
@@ -70,7 +70,7 @@ export default function SignupPage() {
             )}
 
             <Button type="submit" disabled={pending} className="w-full justify-center bg-brand text-white hover:bg-brand-hover">
-              {pending ? "Creating your workspace…" : "Create account"} <ArrowRight className="ml-1 h-4 w-4" />
+              {pending ? "Creating your organization…" : "Create organization"} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </form>
         </SurfaceCard>
@@ -82,8 +82,11 @@ export default function SignupPage() {
           </Link>
         </p>
         <p className="mt-2 text-center text-[12px] text-text-muted">
-          No credit card, no real integrations connected — this is a portfolio demo with your own private sandbox
-          data.
+          Prefer a guided setup? Signal & State can configure your organization for you —{" "}
+          <Link href="/" className="text-brand hover:text-brand-hover">
+            learn about managed implementation
+          </Link>
+          .
         </p>
       </main>
     </div>

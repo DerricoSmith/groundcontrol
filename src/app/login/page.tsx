@@ -19,7 +19,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
-        <Link href="/showcase" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <LogoMark size={26} />
           <span className="text-[14px] font-semibold text-text-primary">Ground Control</span>
         </Link>
@@ -29,7 +29,7 @@ export default function LoginPage() {
       <main className="mx-auto flex max-w-md flex-col px-4 pb-24 pt-10 sm:px-6">
         <p className="text-center text-[13px] font-semibold uppercase tracking-[0.08em] text-brand">Welcome back</p>
         <h1 className="mt-3 text-center font-serif text-[28px] font-medium tracking-tight text-text-primary">
-          Log in to your cockpit.
+          Log in to Ground Control.
         </h1>
 
         <SurfaceCard className="mt-7 p-6">
@@ -63,15 +63,8 @@ export default function LoginPage() {
         <p className="mt-5 text-center text-[13px] text-text-secondary">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-medium text-brand hover:text-brand-hover">
-            Create one free
+            Create one
           </Link>
-        </p>
-        <p className="mt-2 text-center text-[13px] text-text-secondary">
-          Just browsing?{" "}
-          <Link href="/morning-brief" className="font-medium text-brand hover:text-brand-hover">
-            View the demo
-          </Link>{" "}
-          — no account needed.
         </p>
       </main>
     </div>

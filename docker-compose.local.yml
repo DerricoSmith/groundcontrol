@@ -1,0 +1,29 @@
+# Local-only PostgreSQL for exercising prisma/rls-postgres.sql before commercial
+# launch. This is never connected to any hosted/production database — it's a
+# throwaway container on your machine. Do not point DATABASE_URL at this from
+# a deployed environment.
+#
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d
+#   docker compose -f docker-compose.local.yml down        # stop, keep data
+#   docker compose -f docker-compose.local.yml down -v     # stop, wipe data
+#
+# See LOCAL_POSTGRES_SETUP.md for the full workflow (migrate, apply RLS, run
+# tenant-isolation tests against this database).
+
+services:
+  ground-control-local-postgres:
+    image: postgres:16-alpine
+    container_name: ground-control-local-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: groundcontrol
+      POSTGRES_PASSWORD: local-dev-only-not-a-real-secret
+      POSTGRES_DB: groundcontrol_local
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - ground-control-local-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  ground-control-local-postgres-data:

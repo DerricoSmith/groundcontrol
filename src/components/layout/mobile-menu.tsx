@@ -4,23 +4,28 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { Menu, Settings, LifeBuoy, ExternalLink, LogOut } from "lucide-react";
+import { Menu, Settings, LifeBuoy, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { navItems } from "./nav-items";
+import { OrgSwitcher } from "./org-switcher";
 import { logoutAction } from "@/lib/actions/auth-actions";
 import { cn } from "@/lib/utils";
+import type { AvailableOrganization, CurrentMembership } from "@/lib/auth/session";
 
-interface FounderInfo {
-  name: string;
-  firstName: string;
-  business: string;
-  role: string;
-  avatarInitials: string;
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase() || "U";
 }
 
-export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: boolean }) {
+export function MobileMenu({
+  membership,
+  availableOrganizations,
+}: {
+  membership: CurrentMembership | null;
+  availableOrganizations: AvailableOrganization[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
@@ -37,6 +42,15 @@ export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: 
             <span className="text-[14.5px] font-semibold text-text-primary">Ground Control</span>
           </SheetTitle>
         </SheetHeader>
+        {membership && (
+          <div className="px-4 pb-1">
+            <OrgSwitcher
+              organizations={availableOrganizations}
+              currentOrganizationName={membership.organizationName}
+              currentRole={membership.role}
+            />
+          </div>
+        )}
         <nav className="flex-1 space-y-0.5 px-3 pt-2">
           {navItems.map((item) => {
             const active = pathname === item.href;
@@ -57,60 +71,43 @@ export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: 
             );
           })}
           <div className="my-2 border-t border-border" />
-          <Link
-            href="/showcase"
-            onClick={() => setOpen(false)}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary hover:bg-surface-soft hover:text-text-primary"
-          >
-            <ExternalLink className="h-5 w-5 text-text-muted" strokeWidth={2} /> Portfolio case study
-          </Link>
           <button
-            onClick={() => toast("Settings are disabled in this public demo.")}
+            onClick={() => toast("Organization settings ship in a later phase.")}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary"
           >
             <Settings className="h-5 w-5 text-text-muted" strokeWidth={2} /> Settings
           </button>
           <button
-            onClick={() => toast("Help & support isn't wired up in this portfolio demo.")}
+            onClick={() => toast("Help & support isn't wired up yet.")}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary"
           >
             <LifeBuoy className="h-5 w-5 text-text-muted" strokeWidth={2} /> Help &amp; support
           </button>
         </nav>
 
-        {!isLive && (
-          <div className="px-3 pb-1">
+        <div className="border-t border-border p-4">
+          {membership ? (
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
+                {initialsOf(membership.userName)}
+              </div>
+              <div className="min-w-0 flex-1 leading-tight">
+                <p className="truncate text-[13px] font-medium text-text-primary">{membership.userName}</p>
+                <p className="truncate text-[12px] text-text-muted">{membership.organizationName}</p>
+              </div>
+              <button onClick={() => logoutAction()} aria-label="Sign out" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-surface-soft">
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
             <Link
-              href="/signup"
+              href="/login"
               onClick={() => setOpen(false)}
               className="flex w-full items-center justify-center rounded-xl bg-brand px-3 py-3 text-[14.5px] font-medium text-white hover:bg-brand-hover"
             >
-              Sign up free
+              Log in
             </Link>
-          </div>
-        )}
-
-        <div className="border-t border-border p-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12px] font-semibold text-brand">
-              {founder.avatarInitials}
-            </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-[13px] font-medium text-text-primary">{founder.name}</p>
-              <p className="truncate text-[12px] text-text-muted">
-                {isLive ? founder.business : `${founder.role}, ${founder.business} (demo)`}
-              </p>
-            </div>
-            {isLive && (
-              <button
-                onClick={() => logoutAction()}
-                aria-label="Sign out"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-surface-soft"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

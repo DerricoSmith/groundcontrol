@@ -1,166 +1,1409 @@
-// Ground Control — Prisma schema
+// Ground Control — Prisma schema (multi-tenant)
 //
-// Local dev runs on SQLite (zero setup, no external account needed).
-// For production on Vercel, switch the datasource below to:
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")   // e.g. a Vercel Postgres / Neon connection string
-// then run `npx prisma migrate deploy`. The schema below intentionally avoids
-// SQLite-only or Postgres-only features so that switch is a two-line change.
-// See README.md for the full migration steps.
+// THIS FILE IS THE SINGLE SOURCE OF TRUTH, and it targets Postgres, which is
+// what production runs and what every migration in prisma/migrations is
+// generated against.
+//
+// Local development and the test suites run on SQLite for zero-setup speed.
+// That schema is GENERATED from this one, never hand-edited:
+//
+//     node scripts/generate-sqlite-schema.mjs   ->  prisma/schema.sqlite.prisma
+//
+// The generator swaps only the datasource provider. Everything else is
+// identical, so the two cannot drift. `npm run db:sqlite` regenerates and
+// pushes it. See PRODUCTION_MIGRATIONS.md.
+//
+// IMPORTANT: Postgres Row-Level Security (SECURITY.md) cannot be expressed or
+// tested against SQLite. The RLS policy SQL lives in prisma/rls-postgres.sql
+// and is applied to Postgres environments only. SQLite tests therefore prove
+// service-layer tenant isolation; the database-level backstop is verified
+// separately against the production Postgres instance by
+// scripts/verify-tenant-isolation.mjs. Recorded in DECISIONS.md and
+// SECURITY_REVIEW.md.
+//
+// Every tenant-owned model below carries a non-nullable organizationId.
+// See DATA_MODEL.md for the full target model and what is intentionally
+// not yet implemented.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
 model User {
-  id           String   @id @default(cuid())
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+
+  memberships   Membership[]
+  auditEvents   AuditEvent[]
+  importJobs    ImportJob[]
+  ownedAccounts CustomerAccount[] @relation("AccountOwner")
+  leadsOwned    Lead[]
+  invitationsSent     OrganizationInvitation[] @relation("InvitationsSent")
+  invitationsAccepted OrganizationInvitation[] @relation("InvitationsAccepted")
+}
+
+// One organization = one Signal & State client (or Signal & State itself,
+// for the internal consultant workspace in a later phase).
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  isDemo    Boolean  @default(false)
+  isInternal Boolean @default(false) // true only for the Signal & State org itself
+  currency  String   @default("USD") // ISO 4217: USD | JPY | EUR | GBP for phase 1
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Null means data quality has never been evaluated for this organization.
+  // "No open issues" and "never looked" are different statements and the
+  // product must not conflate them.
+  dataQualityEvaluatedAt DateTime?
+
+  memberships      Membership[]
+  customerAccounts CustomerAccount[]
+  renewals         Renewal[]
+  healthScores     HealthScore[]
+  riskSignals      RiskSignal[]
+  recommendedActions RecommendedAction[]
+  auditEvents      AuditEvent[]
+  importJobs       ImportJob[]
+  dataSources      DataSource[]
+  invitations      OrganizationInvitation[]
+  onboardingSession   OnboardingSession?
+  setupChecklistItems SetupChecklistItem[]
+  onboardingEvents    OnboardingEvent[]
+  setupProfile        OrganizationSetupProfile?
+  executiveBriefs     ExecutiveBrief[]
+  aiAnalysisRecords   AIAnalysisRecord[]
+  aiUsageRecords      AIUsageRecord[]
+
+  // Customer Intelligence Core
+  contacts             CustomerContact[]
+  usageSummaries       ProductUsageSummary[]
+  supportTickets       SupportTicket[]
+  interactions         CustomerInteraction[]
+  escalations          Escalation[]
+  dataQualityIssues    DataQualityIssue[]
+  freshnessExpectations DataFreshnessExpectation[]
+  healthModelVersions  HealthModelVersion[]
+  healthScoreSnapshots HealthScoreSnapshot[]
+  healthScoreOverrides HealthScoreOverride[]
+  riskEvaluationRuns   RiskEvaluationRun[]
+  riskRuleConfigurations RiskRuleConfiguration[]
+}
+
+enum Role {
+  OWNER
+  ADMINISTRATOR
+  EXECUTIVE
+  CS_LEADER
+  CS_MANAGER
+  ANALYST
+  VIEWER
+  SIGNAL_STATE_CONSULTANT
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           Role
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+// An invitation is bound to one email address and one role. Accepting it
+// only ever creates a Membership for the user whose account email matches
+// — see invitation-service.ts. Tokens are single-use: status flips away
+// from PENDING the moment they're consumed or revoked, and a consumed or
+// revoked token can never be accepted again.
+model OrganizationInvitation {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  email  String
+  role   Role
+  token  String            @unique
+  status InvitationStatus  @default(PENDING)
+
+  invitedById String
+  invitedBy   User   @relation("InvitationsSent", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  acceptedById String?
+  acceptedBy   User?   @relation("InvitationsAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Customer domain
+// ---------------------------------------------------------------------------
+
+enum HealthCategory {
+  STRONG
+  STABLE
+  WATCH
+  AT_RISK
+  CRITICAL
+}
+
+model CustomerAccount {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   name         String
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
+  externalId   String?        // identifier from the customer's own CRM/billing system, used for import matching
+  segment      String?
+  tier         String?
+  lifecycleStage String?
+  ownerId      String?
+  owner        User?          @relation("AccountOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  arr          Float          @default(0)
+  currency     String         @default("USD")
+  renewalDate  DateTime?
+  healthCategory HealthCategory @default(STABLE)
+  dataConfidence Float         @default(0) // 0–1, see health scoring service
+  // Null means health has never been calculated for this account. The
+  // `healthCategory` default is a storage default, not an assessment — the UI
+  // must show "not yet assessed" rather than reporting an account as Stable
+  // when nothing has actually been scored.
+  healthCalculatedAt DateTime?
 
-  workspace Workspace?
-}
-
-model Workspace {
-  id           String   @id @default(cuid())
-  name         String
-  businessName String
-  createdAt    DateTime @default(now())
-
-  ownerId String @unique
-  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  customers    Customer[]
-  invoices     Invoice[]
-  openLoops    OpenLoop[]
-  opportunities Opportunity[]
-  risks        Risk[]
-}
-
-model Customer {
-  id          String @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  name              String
-  company           String?
-  avatarInitials    String
-  channel           String // Channel union, validated in app layer
-  status            String // CustomerStatus union
-  sentiment         String // Sentiment union
-  isVIP             Boolean
-  atRisk            Boolean
-  isOpportunity     Boolean
-  needsReply        Boolean
-  waitingOn         String? // "you" | "them" | null
-  ltv               Float
-  lastTouchAt       DateTime
-  location          String
-  email             String
-  tags              Json // string[]
-  relationshipSummary String
-  lastMessage       String
-  openIssue         String?
-  nextAction        String
-  suggestedReply    String
-  notes             String
-  revenueOpportunity Float?
-  timeline          Json // TimelineEvent[]
+  dataSourceId String?
+  dataSource   DataSource? @relation(fields: [dataSourceId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  invoices  Invoice[]
-  openLoops OpenLoop[]
-  opportunities Opportunity[]
-  risks     Risk[]
+  renewals            Renewal[]
+  healthScores        HealthScore[]
+  riskSignals         RiskSignal[]
+  recommendedActions  RecommendedAction[]
+  contacts            CustomerContact[]
+  usageSummaries      ProductUsageSummary[]
+  supportTickets      SupportTicket[]
+  interactions        CustomerInteraction[]
+  escalations         Escalation[]
+  dataQualityIssues   DataQualityIssue[]
 
-  @@index([workspaceId])
+  // An account's external id is unique within its organization when present.
+  // Two different organizations may legitimately use the same external id.
+  @@unique([organizationId, externalId])
+  @@index([organizationId])
+  @@index([organizationId, healthCategory])
 }
 
-model Invoice {
-  id          String @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customerId  String?
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+enum ForecastCategory {
+  COMMITTED
+  LIKELY
+  AT_RISK
+  UNCERTAIN
+  EXPECTED_CHURN
+  RENEWED
+  CHURNED
+}
 
-  client   String
-  amount   Float
-  issuedAt DateTime
-  dueAt    DateTime
-  status   String // InvoiceStatus union
-  channel  String // Channel union
+model Renewal {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  periodStart      DateTime
+  periodEnd        DateTime
+  arr              Float
+  currency         String           @default("USD")
+  forecastCategory ForecastCategory @default(UNCERTAIN)
+  forecastConfidence Float          @default(0) // 0–1, computed — see renewal-service.ts
+  ownerId          String?
+  planStatus       String?          // free text status of the renewal plan, phase 1
+  nextAction       String?
+
+  externalId     String?
+  status         RenewalStatus @default(NOT_STARTED)
+  autoRenew      Boolean?
+  noticePeriodDays Int?
+  renewalTermMonths Int?
+  customerIntent String?  // free text, imported or entered — never inferred
+  expectedRenewalAmount   Float?
+  expectedExpansionAmount Float?
+  expectedContractionAmount Float?
+  expectedChurnAmount     Float?
+  actualAmount   Float?
+  closeReason    String?  // churn or contraction reason, recorded at close
+  closedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  plan             RenewalPlan?
+  forecastHistory  RenewalForecastChange[]
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId])
+  @@index([organizationId, periodEnd])
+  @@index([customerAccountId])
+}
+
+enum RenewalStatus {
+  NOT_STARTED
+  PLANNING
+  CUSTOMER_DISCUSSION
+  COMMERCIAL_REVIEW
+  LEGAL_REVIEW
+  PROCUREMENT
+  VERBAL_COMMITMENT
+  RENEWED
+  CHURNED
+  DEFERRED
+}
+
+// Append-only record of every forecast category change, so "the forecast
+// moved and nobody noticed" is answerable. Never updated or deleted.
+model RenewalForecastChange {
+  id             String       @id @default(cuid())
+  organizationId String
+  renewalId      String
+  renewal        Renewal      @relation(fields: [renewalId], references: [id], onDelete: Cascade)
+
+  fromCategory   ForecastCategory?
+  toCategory     ForecastCategory
+  fromConfidence Float?
+  toConfidence   Float
+  reason         String?
+  changedById    String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([renewalId])
+}
+
+// One plan per renewal. Milestones are a fixed ordered list (see
+// renewal-service.ts RENEWAL_MILESTONES) rather than a general workflow
+// builder, which the founder explicitly excluded.
+model RenewalPlan {
+  id             String   @id @default(cuid())
+  organizationId String
+  renewalId      String   @unique
+  renewal        Renewal  @relation(fields: [renewalId], references: [id], onDelete: Cascade)
+
+  ownerId               String?
+  executiveInvolved     Boolean @default(false)
+  internalCommitments   String?
+  customerCommitments   String?
+  notes                 String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  milestones RenewalMilestone[]
+
+  @@index([organizationId])
+}
+
+model RenewalMilestone {
+  id             String      @id @default(cuid())
+  organizationId String
+  renewalPlanId  String
+  renewalPlan    RenewalPlan @relation(fields: [renewalPlanId], references: [id], onDelete: Cascade)
+
+  key         String // stable identifier from RENEWAL_MILESTONES
+  label       String
+  order       Int
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  completedById String?
+  notes       String?
+
+  @@unique([renewalPlanId, key])
+  @@index([organizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Health scoring (deterministic — see IMPLEMENTATION_PLAN.md Phase 6)
+// ---------------------------------------------------------------------------
+
+enum HealthComponentType {
+  PRODUCT_ADOPTION
+  CUSTOMER_RELATIONSHIP
+  SUPPORT_EXPERIENCE
+  COMMERCIAL_POSITION
+  BUSINESS_OUTCOMES
+}
+
+model HealthScore {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  overallScore      Float    // 0–100, deterministic weighted sum of components
+  category           HealthCategory
+  calculationVersion String   // rule-set version, for reproducibility
+  previousScore      Float?
+  dataConfidence      Float   @default(0)
+  calculatedAt        DateTime @default(now())
+
+  overrideValue  Float?
+  overrideReason String?
+  overriddenById String?
+
+  components HealthScoreComponent[]
+
+  @@index([organizationId])
+  @@index([customerAccountId, calculatedAt])
+}
+
+model HealthScoreComponent {
+  id            String       @id @default(cuid())
+  healthScoreId String
+  healthScore   HealthScore  @relation(fields: [healthScoreId], references: [id], onDelete: Cascade)
+
+  type        HealthComponentType
+  score       Float // 0–100
+  weight      Float // 0–1, must sum to 1 across a score's components — validated in service layer
+  confidence  Float @default(0)
+  explanation String
+  trend       String? // "up" | "down" | "flat"
+
+  @@index([healthScoreId])
+}
+
+// ---------------------------------------------------------------------------
+// Risk (always explained — PRODUCT.md format)
+// ---------------------------------------------------------------------------
+
+enum RiskSeverity {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum RiskStatus {
+  NEW
+  OPEN
+  MONITORING
+  IMPROVING
+  RESOLVED
+  DISMISSED
+  ACCEPTED
+}
+
+// Direction is tracked separately from status: an OPEN risk can be
+// improving, and a MONITORING risk can be worsening. Collapsing the two
+// (as the earlier schema did) loses that distinction.
+enum RiskDirection {
+  WORSENING
+  STABLE
+  IMPROVING
+  UNKNOWN
+}
+
+model RiskSignal {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  title      String
+  category   String // RiskCategory — validated against the fixed list in lib/services/risk-service.ts
+  severity   RiskSeverity
+  confidence Float @default(0)
+  revenueExposure Float @default(0)
+  status     RiskStatus @default(OPEN)
+  ownerId    String?
+
+  currentState      String
+  whatChanged        String
+  evidence            Json    // string[] of evidence statements
+  potentialImpact      String
+  recommendedResponse   String
+
+  executiveInvolvementRecommended Boolean @default(false)
+
+  direction   RiskDirection @default(UNKNOWN)
+  ruleVersion String        @default("v1")
+  // Stable per-account-per-rule key, so a re-evaluation updates the existing
+  // signal instead of creating a duplicate every run.
+  ruleKey     String?
+  lastEvaluatedAt DateTime?
+  previousSeverity RiskSeverity?
+  resolutionNote   String?
+  dismissalReason  String?
+
+  detectedAt DateTime @default(now())
+  dueDate    DateTime?
+  resolvedAt DateTime?
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  recommendedActions RecommendedAction[]
+  statusHistory      RiskStatusChange[]
+
+  @@unique([customerAccountId, ruleKey])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, severity])
+}
+
+// Append-only. Never updated or deleted — the history of how a risk was
+// handled is itself evidence.
+model RiskStatusChange {
+  id             String     @id @default(cuid())
+  organizationId String
+  riskSignalId   String
+  riskSignal     RiskSignal @relation(fields: [riskSignalId], references: [id], onDelete: Cascade)
+
+  fromStatus RiskStatus?
+  toStatus   RiskStatus
+  reason     String?
+  changedById String?
+  createdAt  DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([riskSignalId])
+}
+
+// One row per risk evaluation pass, so evaluation is auditable and
+// repeatable rather than an invisible background effect.
+model RiskEvaluationRun {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  ruleVersion       String
+  triggerSource     String   // "manual" | "onboarding" | "import" | "scheduled"
+  triggeredById     String?
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+  accountsEvaluated Int      @default(0)
+  rulesEvaluated    Int      @default(0)
+  risksCreated      Int      @default(0)
+  risksUpdated      Int      @default(0)
+  risksResolved     Int      @default(0)
+  errors            Json?
+
+  @@index([organizationId])
+}
+
+// Per-organization on/off state and threshold overrides for a catalog rule.
+model RiskRuleConfiguration {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  ruleKey    String
+  enabled    Boolean @default(false)
+  thresholds Json?   // rule-specific numeric overrides; null means use catalog defaults
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([organizationId, ruleKey])
+  @@index([organizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Actions (the operating center)
+// ---------------------------------------------------------------------------
+
+enum ActionStatus {
+  SUGGESTED
+  AWAITING_APPROVAL
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+  DISMISSED
+  // Retained so existing rows created before the Customer Intelligence Core
+  // phase remain readable. New code should not use these.
+  DRAFT
+  ASSIGNED
+  COMPLETE
+}
+
+enum ApprovalStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model RecommendedAction {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+  riskSignalId   String?
+  riskSignal     RiskSignal? @relation(fields: [riskSignalId], references: [id], onDelete: SetNull)
+
+  title      String
+  actionType String // ActionType — fixed list in lib/services/action-service.ts
+  reason     String
+  evidence   Json   // string[]
+  priority   String @default("normal") // "urgent" | "high" | "normal" | "low"
+  ownerId    String?
+  dueDate    DateTime?
+  status     ActionStatus @default(DRAFT)
+
+  expectedOutcome String?
+  actualOutcome   String?
+  completedAt     DateTime?
+  notes           String?
+
+  approvalStatus ApprovalStatus @default(NOT_REQUIRED) // required for anything customer-facing
+  source         String @default("system") // "system" | "user" | "risk_rule"
+
+  renewalId    String?
+  escalationId String?
+  blockedReason String?
+  // Stable key for rule-generated actions, so re-evaluating a risk updates
+  // its suggested action instead of creating a duplicate each run.
+  suggestionKey String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  statusHistory ActionStatusChange[]
+  comments      ActionComment[]
+
+  @@unique([customerAccountId, suggestionKey])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, ownerId])
+}
+
+// ---------------------------------------------------------------------------
+// Operations & platform
+// ---------------------------------------------------------------------------
+
+model ImportJob {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  entityType String // "customer_account" | "renewal" | "product_usage_summary" | "support_ticket" | "interaction" | ...
+  fileName   String
+  status     String @default("pending") // "pending" | "validating" | "committed" | "failed" | "partial"
+
+  totalRows   Int @default(0)
+  successRows Int @default(0)
+  errorRows   Int @default(0)
+  errorReport Json? // structured row-level errors
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([organizationId])
+}
+
+model DataSource {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  label String // e.g. "CSV import 2026-01-15", "manual entry", "hubspot" (future)
+  kind  String // "csv" | "manual" | "integration"
+
+  createdAt DateTime @default(now())
+
+  customerAccounts CustomerAccount[]
+
+  @@index([organizationId])
+}
+
+model AuditEvent {
+  id             String        @id @default(cuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorUserId    String?
+  actor          User?         @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  eventType String // fixed list — see SECURITY.md "Audit log"
+  targetType String?
+  targetId   String?
+  metadata   Json?  // never sensitive values — see SECURITY.md
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, eventType])
+}
+
+// ---------------------------------------------------------------------------
+// AI service layer (src/lib/ai/*)
+//
+// Every model call is recorded. The record carries the prompt version, the
+// provider that actually served it (including the deterministic fallback),
+// the evidence the output was grounded in, and a human review state. Nothing
+// generated is treated as fact until a person accepts it, and no AI output
+// ever alters a numeric health score — see CLAUDE.md "AI usage rules".
+// ---------------------------------------------------------------------------
+
+enum AIReviewState {
+  UNREVIEWED
+  ACCEPTED
+  EDITED
+  REJECTED
+}
+
+model AIAnalysisRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  workflow      String // "account_summary" | "risk_explanation" | ... see src/lib/ai/workflows.ts
+  promptVersion String
+  provider      String // "anthropic" | "deterministic" | "disabled"
+  model         String?
+
+  subjectType String? // e.g. "CustomerAccount"
+  subjectId   String?
+
+  // The evidence the output was grounded in, as stable references rather than
+  // copied prose, so a reader can always trace a sentence back to a record.
+  evidenceRefs Json
+  output       Json
+  // True when the deterministic fallback produced this, which the UI must
+  // disclose rather than presenting it as model output.
+  isFallback   Boolean @default(false)
+
+  reviewState  AIReviewState @default(UNREVIEWED)
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, workflow])
+  @@index([subjectType, subjectId])
+}
+
+model AIUsageRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  workflow     String
+  provider     String
+  model        String?
+  inputTokens  Int?
+  outputTokens Int?
+  // Estimated only, in USD. Recorded so cost is visible before it is a
+  // surprise; it is never presented as a billed amount.
+  estimatedCostUsd Float?
+  latencyMs    Int?
+  succeeded    Boolean @default(true)
+  errorKind    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Public site lead intake
+// ---------------------------------------------------------------------------
+
+model Lead {
+  id      String @id @default(cuid())
+  name    String
+  email   String
+  company String?
+  role    String?
+  companySize String?
+  estimatedCustomerCount String?
+  currentSystems String?
+  primaryProblem String?
+  requestedService String? // matches a Signal & State service offer
+  sourcePage String?
+  status  String @default("new") // new | reviewing | qualified | meeting_scheduled | discovery_completed | proposal_sent | won | lost | nurture
+  ownerId String?
+  owner   User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  notes   String?
+  nextAction String?
+  meetingBooked Boolean @default(false)
+  consentGiven  Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([workspaceId])
 }
 
-model OpenLoop {
-  id          String @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customerId  String?
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+// ---------------------------------------------------------------------------
+// Onboarding (IMPLEMENTATION_PLAN.md — onboarding architecture phase)
+//
+// Deliberately the smallest coherent model, not the full nine-entity list
+// once suggested — see ONBOARDING_ARCHITECTURE.md for what was left out and
+// why. One OnboardingSession per organization holds path/progress; steps
+// themselves are NOT a separate table in this pass — completedSteps/
+// skippedSteps are string-key arrays validated in onboarding-service.ts
+// against the ONBOARDING_STEPS registry there, not against a DB row per
+// step. SetupChecklistItem is the persistent post-onboarding checklist
+// (survives after OnboardingSession.status becomes COMPLETED).
+// ---------------------------------------------------------------------------
 
-  title              String
-  type               String // LoopType union
-  source             String
-  priority           String // Priority union
-  dollarImpact       Float?
-  due                String // "today" | "tomorrow" | "this-week" | "waiting" | "someday"
-  dueLabel           String
-  recommendedAction  String
-  status             String @default("open") // "open" | "done" | "snoozed"
-  revenueTied        Boolean
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([workspaceId])
+enum OnboardingPath {
+  QUICK_START
+  GUIDED_SETUP
+  ASSISTED_SETUP
+  EXPLORE_DEMO
 }
 
-model Opportunity {
-  id          String @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customerId  String?
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  title        String
-  customerName String
-  value        Float
-  confidence   String // "warm" | "hot" | "exploratory"
-  note         String
-  nextAction   String
-
-  createdAt DateTime @default(now())
-
-  @@index([workspaceId])
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  REOPENED
 }
 
-model Risk {
-  id          String @id @default(cuid())
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  customerId  String?
-  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+model OnboardingSession {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  title             String
-  customerName      String
-  severity          String // "watch" | "elevated" | "critical"
-  note              String
-  recommendedAction String
+  path   OnboardingPath?
+  status OnboardingStatus @default(NOT_STARTED)
+
+  currentStep    String? // key into the ONBOARDING_STEPS registry
+  completedSteps Json // string[] of step keys — always supplied by the service, never relies on a DB default
+  skippedSteps   Json // string[] of step keys
+  goals          Json // string[] of OnboardingGoal values (see onboarding-service.ts)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  reopenedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum ChecklistItemStatus {
+  PENDING
+  BLOCKED
+  COMPLETED
+}
+
+model SetupChecklistItem {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  key         String // stable identifier, e.g. "import_customer_accounts"
+  label       String
+  description String
+  required    Boolean             @default(false)
+  status      ChecklistItemStatus @default(PENDING)
+
+  resolvedAt   DateTime?
+  resolvedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+}
+
+// One row per organization — company profile answers from the onboarding
+// "Organization profile" step, plus the workspace-configuration decisions
+// (health model activation, which risk rules are turned on, Executive
+// Brief preferences) that the founder's brief originally sketched as
+// separate concerns. Consolidated into one model deliberately: they are
+// all "workspace setup" data collected during the same onboarding pass,
+// and none of them yet need independent versioning or their own audit
+// trail — see ONBOARDING_ARCHITECTURE.md for the reasoning.
+model OrganizationSetupProfile {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  companyWebsite   String?
+  industry         String?
+  businessModel    String?
+  arrRange         String? // free-text bucket, e.g. "2m-10m" — never exact revenue
+  accountCountRange String?
+  csTeamSizeRange  String?
+  reportingCurrency String @default("USD")
+  timeZone         String?
+  contractModel    String?
+  renewalPeriod    String?
+  currentCrm       String?
+  currentSupportSystem   String?
+  currentBillingSystem   String?
+  currentAnalyticsSystem String?
+  currentCsPlatform      String?
+
+  hasFormalHealthScore      Boolean?
+  hasFormalRenewalForecast  Boolean?
+  reviewsFeedbackRegularly  Boolean?
+
+  // Health model activation — the numeric score itself stays fully
+  // deterministic (health-score-service.ts); this only records whether an
+  // organization has activated a model and which weights it chose.
+  healthModelActivated Boolean @default(false)
+  healthModelWeights   Json? // null = use DEFAULT_HEALTH_WEIGHTS
+
+  // Which keys from RISK_RULE_CATALOG (risk-rule-service.ts) are turned on.
+  activatedRiskRuleKeys Json @default("[]")
+
+  // Executive Brief delivery preferences — delivery is always simulated
+  // locally regardless of what's configured here.
+  executiveBriefConfig Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum ExecutiveBriefStatus {
+  DRAFT
+  APPROVED
+  ARCHIVED
+}
+
+// Deterministic, rule-based brief assembled from imported facts — never an
+// AI output in this pass (no AI service layer exists yet). See
+// executive-brief-service.ts.
+model ExecutiveBrief {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  periodLabel String // e.g. "Preview" or "Week of 2026-07-21"
+  status      ExecutiveBriefStatus @default(DRAFT)
+
+  generatedAt DateTime @default(now())
+  approvedAt  DateTime?
+  approvedById String?
+
+  sections ExecutiveBriefSection[]
+
+  @@index([organizationId])
+}
+
+model ExecutiveBriefSection {
+  id               String         @id @default(cuid())
+  executiveBriefId String
+  executiveBrief   ExecutiveBrief @relation(fields: [executiveBriefId], references: [id], onDelete: Cascade)
+
+  key     String // e.g. "revenue_at_risk", "what_changed"
+  title   String
+  content String
+  order   Int
+
+  @@index([executiveBriefId])
+}
+
+// Local-only analytics — never sent to a real analytics provider. eventType
+// is a plain string validated against the OnboardingEventType union in
+// onboarding-service.ts, not a Prisma enum, matching AuditEvent's pattern.
+model OnboardingEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String? // intentionally not a relation — this table must survive user deletion, and never joins to User for display
+
+  eventType String
+  metadata  Json? // non-sensitive context only — see sanitizeEventMetadata() in onboarding-service.ts
 
   createdAt DateTime @default(now())
 
-  @@index([workspaceId])
+  @@index([organizationId])
+  @@index([organizationId, eventType])
+}
+
+// ---------------------------------------------------------------------------
+// Customer Intelligence Core
+//
+// The data the health model and risk engine actually need in order to say
+// anything defensible. Before these existed, 11 of 12 risk rules reported
+// "not usable yet" honestly — see RISK_RULE_CATALOG.md.
+//
+// Deletion policy for everything below: customer-facing history
+// (interactions, tickets, usage, renewals, escalations, risks, actions) is
+// never cascade-deleted by a parent other than its own CustomerAccount or
+// Organization. Deleting a User never deletes customer history — ownership
+// fields are plain nullable id columns or SetNull relations, so a departing
+// team member leaves the record intact and merely unassigned.
+// ---------------------------------------------------------------------------
+
+model CustomerContact {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  name       String
+  email      String?
+  title      String?
+  department String?
+  phone      String?
+  externalId String?
+  sourceSystem String?
+
+  // A contact commonly holds several roles at once (champion AND decision
+  // maker), so roles is a string[] of ContactRole values validated in
+  // contact-import.ts — not a single enum column.
+  roles Json @default("[]")
+
+  influenceLevel      String? // "high" | "medium" | "low" — imported only, never inferred
+  relationshipStrength String? // "strong" | "adequate" | "weak" | "unknown"
+  isActive            Boolean  @default(true)
+  lastInteractionAt   DateTime?
+
+  // Departure tracking feeds the champion_departure risk rule.
+  departedAt        DateTime?
+  replacementContactId String?
+  transitionState   String? // "none" | "identified" | "in_progress" | "complete"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  interactions CustomerInteraction[]
+
+  @@index([organizationId])
+  @@index([customerAccountId])
+  @@index([organizationId, email])
+}
+
+// Periodic rollups, not raw events. Multiple periods per account are
+// expected; a later import never overwrites an earlier period — see
+// product-usage-import.ts.
+model ProductUsageSummary {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  activeUsers        Int?
+  licensedUsers      Int?
+  loginCount         Int?
+  coreActionsCompleted Int?
+  featureAdoptionCount Int?
+  usageFrequency     String?  // imported label, e.g. "daily" | "weekly" — never inferred
+  adoptionPercentage Float?   // 0–100
+  seatUtilizationPercentage Float? // 0–100
+  lastActiveAt       DateTime?
+  sourceTrend        String?  // trend as supplied by the source system, kept distinct from our own calculation
+  productArea        String?
+  customMetric       Float?
+  externalId         String?
+  sourceSystem       String?
+
+  createdAt DateTime @default(now())
+
+  // One summary per account per period. A repeated import of the same
+  // period is a duplicate, not a second data point.
+  @@unique([customerAccountId, periodStart, periodEnd])
+  @@index([organizationId])
+  @@index([customerAccountId, periodEnd])
+}
+
+enum TicketStatus {
+  NEW
+  OPEN
+  PENDING
+  ON_HOLD
+  SOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  externalTicketId String
+  createdDate      DateTime
+  updatedDate      DateTime?
+  closedDate       DateTime?
+
+  status   TicketStatus   @default(OPEN)
+  priority TicketPriority @default(NORMAL)
+  severity String?
+  category String?
+  subject  String?
+  descriptionSummary String? // stored locally only; never sent to any external provider
+
+  satisfactionScore Float?
+  firstResponseMinutes Int?
+  resolutionMinutes    Int?
+  reopenCount       Int     @default(0)
+  escalated         Boolean @default(false)
+  productArea       String?
+  requesterEmail    String?
+  assignedTeam      String?
+  sourceSystem      String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([organizationId, externalTicketId])
+  @@index([organizationId])
+  @@index([customerAccountId, createdDate])
+  @@index([organizationId, status])
+}
+
+enum InteractionType {
+  CUSTOMER_MEETING
+  EXECUTIVE_MEETING
+  BUSINESS_REVIEW
+  EMAIL
+  SUPPORT_INTERACTION
+  TRAINING
+  IMPLEMENTATION_SESSION
+  RENEWAL_CONVERSATION
+  EXPANSION_CONVERSATION
+  ESCALATION_CONVERSATION
+  SURVEY_FOLLOW_UP
+  INTERNAL_REVIEW
+  OTHER
+}
+
+enum InteractionSentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  MIXED
+  UNKNOWN
+}
+
+model CustomerInteraction {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  interactionDate DateTime
+  type            InteractionType
+
+  contactId String?
+  contact   CustomerContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  contactEmail String?
+  contactName  String?
+  internalOwnerId String?
+
+  summary   String?
+  // Sentiment is only ever imported or manually selected. Nothing in this
+  // phase infers it — see CUSTOMER_INTERACTION_IMPORT_GUIDE.md.
+  sentiment InteractionSentiment @default(UNKNOWN)
+  outcome   String?
+  nextStep  String?
+  nextStepDueDate DateTime?
+
+  executiveParticipated Boolean @default(false)
+  championParticipated  Boolean @default(false)
+  renewalRelated        Boolean @default(false)
+  escalationRelated     Boolean @default(false)
+
+  externalId   String?
+  sourceSystem String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId])
+  @@index([customerAccountId, interactionDate])
+}
+
+enum EscalationCategory {
+  PRODUCT
+  SUPPORT
+  IMPLEMENTATION
+  RELATIONSHIP
+  COMMERCIAL
+  BILLING
+  SECURITY
+  LEGAL
+  EXECUTIVE
+  OTHER
+}
+
+enum EscalationSeverity {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum EscalationStatus {
+  NEW
+  INVESTIGATING
+  ACTION_PLAN_ACTIVE
+  MONITORING
+  RESOLVED
+  CLOSED
+}
+
+model Escalation {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  title       String
+  category    EscalationCategory
+  severity    EscalationSeverity
+  status      EscalationStatus   @default(NEW)
+  ownerId     String?
+  executiveOwnerId String?
+
+  description     String
+  customerImpact  String?
+  revenueExposure Float   @default(0)
+
+  openedAt             DateTime  @default(now())
+  targetResolutionDate DateTime?
+  resolvedAt           DateTime?
+  resolutionSummary    String?
+  customerCommunicationState String? // "none" | "acknowledged" | "updating" | "closed_with_customer"
+  internalNotes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([customerAccountId])
+}
+
+enum DataQualitySeverity {
+  INFORMATION
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum DataQualityStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+// Persistent, not a rendered-on-the-fly summary. Detection is deterministic
+// and re-runnable; re-running updates existing open issues rather than
+// duplicating them (see the unique constraint).
+model DataQualityIssue {
+  id             String           @id @default(cuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String?
+  customerAccount CustomerAccount? @relation(fields: [customerAccountId], references: [id], onDelete: Cascade)
+
+  category   String // from DATA_QUALITY_CATEGORIES in data-quality-service.ts
+  severity   DataQualitySeverity
+  status     DataQualityStatus   @default(OPEN)
+
+  explanation        String
+  suggestedResolution String
+  sourceRecordType   String?
+  sourceRecordId     String?
+
+  ownerId    String?
+  detectedAt DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  resolvedAt DateTime?
+  dismissalReason String?
+  ruleVersion String   @default("v1")
+
+  // One open issue per (account, category) — re-detection updates rather
+  // than piling up duplicates. Account-less org-wide issues use a null
+  // account, which SQLite treats as distinct, so those are deduped in the
+  // service layer instead.
+  @@unique([organizationId, customerAccountId, category])
+  @@index([organizationId])
+  @@index([organizationId, status])
+}
+
+// Per-organization freshness expectation per data category. Defaults live
+// in data-freshness-service.ts; a row here means the org overrode one.
+model DataFreshnessExpectation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  category           String // "customer_account" | "renewal" | "product_usage" | "support_ticket" | "interaction" | "contact"
+  expectedMaxAgeDays Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([organizationId, category])
+  @@index([organizationId])
+}
+
+// A versioned, activatable health model. Components and their weights are
+// stored as JSON on the version rather than as child rows: a version is
+// immutable once activated, so there is nothing to update per-component,
+// and keeping them together makes "what exactly was this score computed
+// with" a single read. See HEALTH_MODEL_ARCHITECTURE.md.
+model HealthModelVersion {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  version     Int
+  label       String?
+  isActive    Boolean  @default(false)
+  isDraft     Boolean  @default(true)
+
+  // { PRODUCT_ADOPTION: 0.3, CUSTOMER_RELATIONSHIP: 0.2, ... } — validated
+  // to sum to exactly 1 before activation by health-score-service.ts.
+  weights     Json
+  thresholds  Json?    // { STRONG: 80, STABLE: 65, WATCH: 50, AT_RISK: 35 }
+
+  activatedAt   DateTime?
+  activatedById String?
+  deactivatedAt DateTime?
+  effectiveFrom DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([organizationId, version])
+  @@index([organizationId])
+}
+
+// Point-in-time health record. Distinct from the existing HealthScore
+// model, which the onboarding phase used for a single current value:
+// snapshots are append-only history and store the full component evidence
+// that produced them.
+model HealthScoreSnapshot {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+
+  overallScore   Float
+  category       HealthCategory
+  previousScore  Float?
+  previousCategory HealthCategory?
+  changeReason   String?
+  dataConfidence Float  @default(0)
+  calculationVersion String
+  healthModelVersionId String?
+
+  // [{ type, score, weight, confidence, explanation, evidence: string[] }]
+  components Json
+
+  calculatedAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([customerAccountId, calculatedAt])
+}
+
+// Manual override of a calculated health state. Always requires a reason,
+// always audited, always visibly an override rather than a calculation.
+model HealthScoreOverride {
+  id             String          @id @default(cuid())
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerAccountId String
+
+  overrideCategory HealthCategory
+  overrideScore    Float?
+  reason           String
+  evidence         String?
+  createdById      String
+  reviewDate       DateTime?
+  expiresAt        DateTime?
+  isActive         Boolean  @default(true)
+  revokedAt        DateTime?
+  revocationReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([customerAccountId, isActive])
+}
+
+// Append-only action status history — "who moved this and when" is part of
+// the operating record, not derivable from the current status alone.
+model ActionStatusChange {
+  id             String            @id @default(cuid())
+  organizationId String
+  actionId       String
+  action         RecommendedAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  fromStatus  ActionStatus?
+  toStatus    ActionStatus
+  note        String?
+  changedById String?
+  createdAt   DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([actionId])
+}
+
+model ActionComment {
+  id             String            @id @default(cuid())
+  organizationId String
+  actionId       String
+  action         RecommendedAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  body      String
+  authorId  String?
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([actionId])
 }
