@@ -1,5 +1,5 @@
 import "server-only";
-import type { OnboardingPath, OnboardingSession, Role } from "@prisma/client";
+import { Prisma, type OnboardingPath, type OnboardingSession, type Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertCan } from "@/lib/auth/permissions";
 import { recordAuditEvent } from "@/lib/services/audit-service";
@@ -154,17 +154,32 @@ export async function startOrResumeOnboarding(params: {
     return existing;
   }
 
-  const session = await prisma.onboardingSession.create({
-    data: {
-      organizationId: params.organizationId,
-      status: "IN_PROGRESS",
-      currentStep: ONBOARDING_STEPS[0].key,
-      completedSteps: [],
-      skippedSteps: [],
-      goals: [],
-      startedAt: new Date(),
-    },
-  });
+  // Onboarding entry is where concurrent requests genuinely arrive: the
+  // redirect after signup, a router prefetch, and a double-clicked link can all
+  // reach here at once. The existence check above and this insert are not one
+  // atomic operation, and neither is Prisma's upsert in every case, so the
+  // only reliable pattern is to attempt the insert and treat a unique
+  // violation as "someone else won the race" rather than as an error.
+  let session: OnboardingSession;
+  try {
+    session = await prisma.onboardingSession.create({
+      data: {
+        organizationId: params.organizationId,
+        status: "IN_PROGRESS",
+        currentStep: ONBOARDING_STEPS[0].key,
+        completedSteps: [],
+        skippedSteps: [],
+        goals: [],
+        startedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const winner = await getOnboardingSession(params.organizationId);
+      if (winner) return winner;
+    }
+    throw error;
+  }
 
   await trackOnboardingEvent({ organizationId: params.organizationId, userId: params.actingUserId, eventType: "onboarding_started" });
   return session;

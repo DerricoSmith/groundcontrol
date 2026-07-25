@@ -159,7 +159,11 @@ export default async function CustomerPortfolioPage({
           <Link
             key={s.key}
             href={linkTo({ sort: s.key, page: "1" })}
-            className={sort === s.key ? "font-medium text-brand" : "text-text-muted hover:text-text-primary"}
+            aria-current={sort === s.key ? "true" : undefined}
+            // text-text-muted is a decorative grey that fails contrast against
+            // the page background for interactive text. Sort options are
+            // controls, not captions, so they use the secondary text colour.
+            className={sort === s.key ? "font-medium text-brand" : "text-text-secondary hover:text-text-primary"}
           >
             {s.label}
           </Link>

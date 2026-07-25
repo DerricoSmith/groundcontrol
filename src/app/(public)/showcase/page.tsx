@@ -74,15 +74,16 @@ export default function ShowcasePage() {
             United States and Asia including considerable time doing business in Japan.
           </p>
           <p>
-            In every one of those organizations, the same failure repeated. We learned an account was in trouble during
-            the renewal conversation. The signals had been visible for months, sitting in four different systems, and
-            no single person had a reason to look at them together on an ordinary Tuesday.
+            Across those organizations, one pattern kept surfacing. The accounts that were hardest to save were the
+            ones where the warning signs were real but scattered, sitting in four different systems, with no single
+            person who had a reason to look at them together on an ordinary Tuesday.
           </p>
           <p>
-            I tried to fix it with process, reporting, and headcount. Each helped and none held. A process survives
-            only while someone maintains it. Reporting tells you what happened, not what to do. Ground Control began as
-            a portfolio concept built on those recurring problems, and it became a real product because the problems
-            were specific enough to build against.
+            We built good process, strong reporting, and capable teams, and those moved the numbers. What none of them
+            could do was make the connection automatic. A process holds only while someone maintains it, and reporting
+            tells you what happened rather than what to do about it. The gap was structural. Ground Control began as a
+            portfolio concept built on that observation, and it became a real product because the problem was specific
+            enough to build against.
           </p>
         </Prose>
       </Section>

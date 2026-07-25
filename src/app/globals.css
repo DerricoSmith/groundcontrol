@@ -61,6 +61,7 @@
   --color-accent-red: var(--accent-red);
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
+  --color-positive-strong: var(--positive-strong);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
@@ -144,6 +145,13 @@
 
   --positive: var(--accent-green);
   --positive-soft: #ecfdf3;
+  /*
+   * For text sitting on a soft background. --positive is tuned for icons,
+   * bars, and dots, where a 3:1 ratio is sufficient; against --positive-soft
+   * it measures about 3.3:1, which fails AA for text. This darker value clears
+   * 4.5:1 while staying the same hue.
+   */
+  --positive-strong: #15803d;
   --warning: var(--accent-amber);
   --warning-soft: #fffaeb;
   --danger: var(--accent-red);
@@ -220,6 +228,9 @@
 
   --positive: var(--accent-green);
   --positive-soft: rgba(34, 197, 94, 0.12);
+  /* On the dark surface the soft background is nearly black, so the text
+     needs to be lighter rather than darker to clear the same ratio. */
+  --positive-strong: #4ade80;
   --warning: var(--accent-amber);
   --warning-soft: rgba(251, 191, 36, 0.12);
   --danger: var(--accent-red);
@@ -252,6 +263,21 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /*
+   * Links sitting inside a block of text must be distinguishable without
+   * relying on colour (WCAG 1.4.1), which is also the product's own rule that
+   * nothing carries meaning by colour alone. Underlining them here rather than
+   * per-link means a new paragraph cannot reintroduce the problem by omission.
+   *
+   * Standalone links — navigation, cards, buttons, table cells — are not in a
+   * text block and stay clean, so this does not underline the whole interface.
+   */
+  p > a,
+  li > a,
+  dd > a {
+    @apply underline decoration-from-font underline-offset-2;
   }
 }
 

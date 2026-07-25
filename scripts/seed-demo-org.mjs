@@ -17,12 +17,66 @@
  *    never touches an organization it did not create.
  *  - No privileged credential. The public demo is read-only and server
  *    rendered, so no shared demo password exists to leak.
+ *  - Cold-start tolerant. Neon suspends an idle compute, so the first query
+ *    after a quiet period can fail while the instance wakes. The seed warms
+ *    the connection first and retries transient failures with backoff, which
+ *    is what made it "fail once then succeed on retry" before v1.0.1.
+ *  - Verified. It counts what it wrote and checks the required demonstration
+ *    scenarios before reporting success, so a partial seed is a failure and
+ *    exits non-zero rather than printing a reassuring message.
+ *
+ * Flags:
+ *   --dry-run   report what exists and what would be written, write nothing
  */
 import { PrismaClient } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+const DRY_RUN = process.argv.includes("--dry-run");
+
+/** Errors worth retrying: the connection was not ready, not the data was wrong. */
+const TRANSIENT_CODES = new Set(["P1001", "P1002", "P1008", "P1017", "P2024"]);
+
+function isTransient(error) {
+  if (TRANSIENT_CODES.has(error?.code)) return true;
+  const message = String(error?.message ?? "");
+  return (
+    message.includes("Can't reach database server") ||
+    message.includes("Connection terminated") ||
+    message.includes("connection closed") ||
+    message.includes("timed out")
+  );
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Runs an operation, retrying only transient connection failures. A constraint
+ * violation or a schema mismatch is a real bug and is rethrown immediately
+ * rather than retried into a confusing timeout.
+ */
+async function withRetry(label, operation, attempts = 4) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isTransient(error) || attempt === attempts) throw error;
+      const delay = 500 * 2 ** (attempt - 1);
+      console.warn(`  ${label}: transient failure (${error.code ?? "unknown"}), retrying in ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+}
+
+/** Wakes a suspended Neon compute before the real work starts. */
+async function warmConnection() {
+  await withRetry("connection warm-up", () => prisma.$queryRaw`SELECT 1`, 6);
+}
 
 export const DEMO_SLUG = "meridian-systems-demo";
 const DEMO_OWNER_EMAIL = "operator@meridian-systems.demo";
@@ -370,7 +424,89 @@ const ACCOUNTS = [
   },
 ];
 
+/**
+ * Confirms the seed actually produced a usable demonstration rather than a
+ * partial one. Counting rows is not enough: the demo exists to tell specific
+ * stories, so the required scenarios are asserted by name.
+ */
+async function verifySeed(organizationId) {
+  const problems = [];
+
+  const [accounts, contacts, renewals, escalations, tickets, interactions] = await Promise.all([
+    prisma.customerAccount.count({ where: { organizationId } }),
+    prisma.customerContact.count({ where: { organizationId } }),
+    prisma.renewal.count({ where: { organizationId } }),
+    prisma.escalation.count({ where: { organizationId } }),
+    prisma.supportTicket.count({ where: { organizationId } }),
+    prisma.customerInteraction.count({ where: { organizationId } }),
+  ]);
+
+  console.log(
+    `\nVerification: accounts=${accounts} contacts=${contacts} renewals=${renewals} ` +
+      `escalations=${escalations} tickets=${tickets} interactions=${interactions}`
+  );
+
+  if (accounts !== ACCOUNTS.length) {
+    problems.push(`expected ${ACCOUNTS.length} accounts, found ${accounts}`);
+  }
+
+  // Each required demonstration scenario, checked by the property that makes
+  // it a scenario rather than by its name alone.
+  const checks = [
+    ["an account with an open escalation", () => prisma.escalation.count({ where: { organizationId } }).then((n) => n >= 2)],
+    [
+      "an account with no revenue on file",
+      () => prisma.customerAccount.count({ where: { organizationId, arr: 0 } }).then((n) => n >= 1),
+    ],
+    [
+      "an account with no renewal date",
+      () => prisma.customerAccount.count({ where: { organizationId, renewalDate: null } }).then((n) => n >= 1),
+    ],
+    [
+      "an account with a departed champion",
+      () => prisma.customerContact.count({ where: { organizationId, departedAt: { not: null } } }).then((n) => n >= 1),
+    ],
+    [
+      "an account with a renewal plan",
+      () => prisma.renewalPlan.count({ where: { organizationId } }).then((n) => n >= 1),
+    ],
+    [
+      "overdue actions",
+      () =>
+        prisma.recommendedAction
+          .count({ where: { organizationId, dueDate: { lt: new Date() } } })
+          .then((n) => n >= 1),
+    ],
+  ];
+
+  for (const [label, check] of checks) {
+    const ok = await check();
+    console.log(`  [${ok ? "pass" : "FAIL"}] ${label}`);
+    if (!ok) problems.push(label);
+  }
+
+  return problems;
+}
+
 async function main() {
+  await warmConnection();
+
+  if (DRY_RUN) {
+    const existing = await prisma.organization.findUnique({
+      where: { slug: DEMO_SLUG },
+      select: { id: true, name: true },
+    });
+    if (!existing) {
+      console.log(`Dry run: demo organization "${DEMO_SLUG}" does not exist. ${ACCOUNTS.length} accounts would be created.`);
+      return;
+    }
+    const accounts = await prisma.customerAccount.count({ where: { organizationId: existing.id } });
+    console.log(`Dry run: demo organization exists with ${accounts} of ${ACCOUNTS.length} accounts. Nothing written.`);
+    const problems = await verifySeed(existing.id);
+    if (problems.length > 0) console.log(`\nWould repair: ${problems.join(", ")}`);
+    return;
+  }
+
   const organization = await prisma.organization.upsert({
     where: { slug: DEMO_SLUG },
     update: { isDemo: true },
@@ -571,7 +707,7 @@ async function main() {
               },
             },
           });
-          await prisma.renewal.update({ where: { id: renewal.id }, data: { status: "IN_PLANNING" } });
+          await prisma.renewal.update({ where: { id: renewal.id }, data: { status: "PLANNING" } });
         }
       }
     }
@@ -626,14 +762,28 @@ async function main() {
     }
   }
 
-  console.log(`Demo organization "${organization.name}" is seeded with ${ACCOUNTS.length} accounts.`);
+  const problems = await verifySeed(organization.id);
+
+  if (problems.length > 0) {
+    // A partial seed must not report success. The demo is the product's
+    // shop window, and half of it is worse than a clear failure.
+    console.error(`\nSeed incomplete. ${problems.length} problem(s):`);
+    for (const problem of problems) console.error(`  ${problem}`);
+    console.error("\nRe-run the seed. It is idempotent, so a second run repairs what is missing.\n");
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`\nDemo organization "${organization.name}" is seeded and verified with ${ACCOUNTS.length} accounts.`);
   console.log("Next: run the risk evaluation, health recalculation, and data quality detection to populate intelligence.");
   return organization.id;
 }
 
 main()
   .catch((error) => {
-    console.error(error);
+    // Print the useful part without dumping a connection string.
+    console.error(`\nSeed failed: ${error?.code ? `${error.code} ` : ""}${error?.message ?? error}`);
+    if (error?.stack) console.error(error.stack.split("\n").slice(0, 6).join("\n"));
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

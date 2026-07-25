@@ -47,7 +47,7 @@ export function Topbar({
 
       <div className="flex items-center gap-1">
         {membership && (
-          <div className="mr-1 hidden items-center gap-1.5 rounded-full border border-positive/25 bg-positive-soft px-2.5 py-1 text-[11.5px] font-medium text-positive md:flex">
+          <div className="mr-1 hidden items-center gap-1.5 rounded-full border border-positive/25 bg-positive-soft px-2.5 py-1 text-[11.5px] font-medium text-positive-strong md:flex">
             <CloudCheck className="h-3.5 w-3.5" strokeWidth={2} />
             Saved
           </div>
@@ -56,8 +56,16 @@ export function Topbar({
         <ThemeToggle />
 
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
-            <Bell className="h-[18px] w-[18px]" strokeWidth={2} />
+          {/*
+            An icon-only trigger has no text content, so a screen reader
+            announces it as an unlabelled button. aria-label supplies the
+            accessible name; the icon itself is hidden from assistive
+            technology so it is not announced twice.
+          */}
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="icon" className="relative" aria-label="Notifications" />}
+          >
+            <Bell className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72">
             <DropdownMenuGroup>

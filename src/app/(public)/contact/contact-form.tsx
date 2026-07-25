@@ -23,8 +23,8 @@ export function ContactForm({ defaultReason, sourcePage }: { defaultReason?: str
           <div>
             <h2 className="text-[16px] font-medium text-text-primary">Message received.</h2>
             <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-              It is stored and Rico will read it. You will get a reply at the address you gave, usually within two
-              business days.
+              It has been stored and the team will read it. You will get a reply at the address you gave, usually
+              within two business days.
             </p>
           </div>
         </div>

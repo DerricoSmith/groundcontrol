@@ -32,6 +32,24 @@ describe("onboarding-service", () => {
     await disconnectTestDatabase();
   });
 
+  it("survives concurrent onboarding entry without violating the unique organization constraint", async () => {
+    await seedOrg();
+
+    // Onboarding entry is where concurrent requests genuinely arrive: the
+    // redirect after signup, a router prefetch, and a double-clicked link can
+    // all hit it at once. A check-then-create here crashed under Postgres with
+    // a unique constraint violation; the upsert makes the loser a no-op.
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => startOrResumeOnboarding({ organizationId: orgId, actingUserId: ownerId }))
+    );
+
+    const ids = new Set(results.map((session) => session.id));
+    expect(ids.size).toBe(1);
+
+    const stored = await testDb.onboardingSession.findMany({ where: { organizationId: orgId } });
+    expect(stored).toHaveLength(1);
+  });
+
   async function seedOrg(isDemo = false) {
     const owner = await testDb.user.create({ data: { name: "Owner", email: `owner-${Math.random()}@onboarding-test.local`, passwordHash: "x" } });
     const org = await testDb.organization.create({

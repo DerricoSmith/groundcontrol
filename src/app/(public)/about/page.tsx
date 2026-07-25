@@ -46,15 +46,15 @@ export default function AboutPage() {
         <SectionHeading title="Why I built this" />
         <Prose>
           <p>
-            Every customer organization I led had the same failure. We found out an account was in trouble during the
-            renewal conversation. The signals had been there for months. Usage had dropped in the product analytics
-            tool, tickets had escalated in the support platform, the champion had gone quiet in the CRM, and no single
+            Across every customer organization I have led, one pattern kept showing up. The hardest accounts to save
+            were the ones where the warning signs were real but scattered. Usage had softened in the product analytics
+            tool, a ticket had escalated in the support platform, a champion had gone quiet in the CRM, and no single
             person had a reason to look at those three things together on an ordinary Tuesday.
           </p>
           <p>
-            I tried to solve it with process, with reporting, and with headcount. Those helped, and they did not hold.
-            A process only works while someone maintains it, and reporting tells you what happened rather than what to
-            do about it.
+            We built good process, good reporting, and strong teams, and those moved the numbers. What they could not
+            do was make the connection automatic. A process holds only while someone maintains it, and reporting tells
+            you what happened rather than what to do about it. The gap was structural, not a people problem.
           </p>
           <p>
             Ground Control began as a portfolio concept based on those recurring problems. It became a working product

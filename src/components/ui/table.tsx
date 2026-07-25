@@ -6,9 +6,17 @@ import { cn } from "@/lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
+    // A horizontally scrolling container is unreachable by keyboard unless it
+    // is focusable, so someone navigating without a mouse cannot see the
+    // columns that overflow. tabIndex makes it focusable and the group role
+    // plus label explain what receives focus rather than announcing a bare
+    // container.
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      tabIndex={0}
+      role="group"
+      aria-label="Scrollable table"
     >
       <table
         data-slot="table"
