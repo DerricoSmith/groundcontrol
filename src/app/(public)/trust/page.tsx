@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from "next";
-import { Section, SectionHeading, Prose, HonestyNote } from "@/components/public/sections";
+import { Section, SectionHeading, Prose, HonestyNote, PageHero } from "@/components/public/sections";
 
 export const metadata: Metadata = {
   title: "Trust and security",
@@ -21,17 +21,11 @@ const LIMITATIONS = [
 export default function TrustPage() {
   return (
     <>
-      <Section className="pt-14">
-        <div className="max-w-3xl">
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">Trust</p>
-          <h1 className="font-serif text-[32px] font-medium leading-[1.12] tracking-tight text-text-primary sm:text-[44px]">
-            What we do with your data, and what we do not claim.
-          </h1>
-          <p className="mt-5 text-[16px] leading-relaxed text-text-secondary">
-            This page is written to be checkable. Where something is not built or not certified, it says so.
-          </p>
-        </div>
-      </Section>
+      <PageHero
+        eyebrow="Trust"
+        title="What we do with your data, and what we do not claim."
+        description="This page is written to be checkable. Where something is not built or not certified, it says so."
+      />
 
       <Section tone="soft">
         <SectionHeading title="Tenant separation" />

@@ -18,8 +18,19 @@ const OUTPUT_DIR = resolve(process.cwd(), "public", "screenshots");
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
 
-test.beforeAll(() => {
+test.beforeAll(async ({ request }) => {
   mkdirSync(OUTPUT_DIR, { recursive: true });
+
+  // The seed writes raw records; health scores, risks, actions, and the brief
+  // are derived by services. Without this the risk and brief pages render
+  // empty and the generator would capture blank regions.
+  const response = await request.post("/api/demo/refresh", {
+    headers: { "x-seed-secret": "e2e-only-seed-secret" },
+    timeout: 180_000,
+  });
+  if (!response.ok()) {
+    throw new Error(`Could not populate demo intelligence: ${response.status()} ${await response.text()}`);
+  }
 });
 
 /**
@@ -53,23 +64,77 @@ async function capture(page: Page, path: string, name: string, waitFor: RegExp, 
   await page.screenshot({ path: resolve(OUTPUT_DIR, name), fullPage, animations: "disabled" });
 }
 
+/**
+ * Captures a single element rather than the page.
+ *
+ * A full-page shot of a demo route includes the public site header and the
+ * fictional-data notice, so the marketing page ends up showing its own
+ * navigation inside a browser frame, which reads as a mistake. Framing the
+ * product region instead produces an image that looks like the application.
+ */
+async function captureRegion(
+  page: Page,
+  path: string,
+  name: string,
+  selector: string,
+  maxHeight?: number
+) {
+  await page.goto(path);
+  const region = page.locator(selector).first();
+  await expect(region).toBeVisible({ timeout: 30_000 });
+  await prepare(page);
+
+  // A list of 32 risks produces a very tall, very heavy image that reads as a
+  // strip rather than as a screen. Clipping to a sensible height keeps the
+  // aspect ratio usable and the file small, and the demo is one click away for
+  // anyone who wants the whole list.
+  if (maxHeight) {
+    await region.evaluate((element, height) => {
+      const node = element as HTMLElement;
+      node.style.maxHeight = `${height}px`;
+      node.style.overflow = "hidden";
+    }, maxHeight);
+  }
+
+  await region.screenshot({ path: resolve(OUTPUT_DIR, name), animations: "disabled" });
+}
+
 test.describe("demo screenshots", () => {
   test("desktop captures", async ({ page }) => {
     await page.setViewportSize(DESKTOP);
 
-    await capture(page, "/demo", "demo-mission-control.png", /What needs attention/i);
-    await capture(page, "/demo/accounts", "demo-customer-portfolio.png", /Customer portfolio/i);
-    await capture(page, "/demo/accounts/harborline", "demo-account-detail.png", /How this score was produced/i);
-    await capture(page, "/demo/risks", "demo-risk-evidence.png", /Risk radar/i);
-    await capture(page, "/demo/actions", "demo-recommended-actions.png", /Actions/i);
+    // Region captures for the shots the marketing pages frame. A full-page
+    // capture of a demo route includes the public site header, so the image
+    // ends up showing the site's own navigation inside a browser frame.
+    await captureRegion(page, "/demo", "demo-mission-control.png", '[data-shot="mission-control"]');
+    await captureRegion(page, "/demo/accounts", "demo-customer-portfolio.png", '[data-shot="portfolio"]');
+    await captureRegion(page, "/demo/accounts/harborline", "demo-account-detail.png", '[data-shot="account-detail"]');
+    await captureRegion(page, "/demo/risks", "demo-risk-evidence.png", '[data-shot="risks"]', 900);
+
+    // The executive brief exists only after the intelligence pipeline has run,
+    // which the end-to-end seed does not do. Skip rather than overwrite a good
+    // image with the empty state; see DEMO_RECOVERY.md for generating one.
+    await page.goto("/demo/brief");
+    const brief = page.locator('[data-shot="brief"]');
+    if ((await brief.count()) > 0) {
+      await captureRegion(page, "/demo/brief", "demo-executive-brief.png", '[data-shot="brief"]', 1100);
+    } else {
+      console.log("Skipping the executive brief capture: no brief in this database.");
+    }
+
+    await captureRegion(page, "/demo/actions", "demo-recommended-actions.png", "main > div > div:last-child", 900);
     await capture(page, "/demo/renewals", "demo-renewals.png", /Renewal center/i);
-    await capture(page, "/demo/brief", "demo-executive-brief.png", /Executive brief/i);
   });
 
   test("mobile captures", async ({ page }) => {
     await page.setViewportSize(MOBILE);
 
-    await capture(page, "/demo", "demo-mission-control-mobile.png", /What needs attention/i);
-    await capture(page, "/demo/accounts/harborline", "demo-account-detail-mobile.png", /How this score was produced/i);
+    await captureRegion(page, "/demo", "demo-mission-control-mobile.png", '[data-shot="mission-control"]');
+    await captureRegion(
+      page,
+      "/demo/accounts/harborline",
+      "demo-account-detail-mobile.png",
+      '[data-shot="account-detail"]'
+    );
   });
 });

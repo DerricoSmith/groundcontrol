@@ -1,5 +1,4 @@
 ﻿import type { Metadata } from "next";
-import { Section } from "@/components/public/sections";
 import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
@@ -16,11 +15,18 @@ export default async function ContactPage({
   const { reason } = await searchParams;
 
   return (
-    <Section className="pt-14">
+    <section className="relative overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-brand-wash" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid mask-fade-b opacity-50" />
+
+      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-24">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
         <div>
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">Contact</p>
-          <h1 className="font-serif text-[30px] font-medium leading-[1.14] tracking-tight text-text-primary sm:text-[40px]">
+          <p className="mb-4 flex items-center gap-2.5 text-[12px] font-medium uppercase tracking-[0.16em] text-brand">
+            <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
+            Contact
+          </p>
+          <h1 className="font-serif text-[34px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[46px]">
             Start a conversation.
           </h1>
           <p className="mt-5 text-[15.5px] leading-relaxed text-text-secondary">
@@ -53,10 +59,11 @@ export default async function ContactPage({
           </dl>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+        <div className="rounded-2xl border border-border bg-surface p-6 elevate-lg sm:p-8">
           <ContactForm defaultReason={reason} sourcePage="/contact" />
         </div>
       </div>
-    </Section>
+      </div>
+    </section>
   );
 }

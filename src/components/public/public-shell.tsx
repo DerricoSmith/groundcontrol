@@ -27,19 +27,19 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="Signal and State home">
-            <LogoMark className="h-7 w-7" />
+          <Link href="/" className="group flex items-center gap-2.5" aria-label="Signal and State home">
+            <LogoMark className="h-7 w-7 transition-transform duration-200 group-hover:scale-105" />
             <span className="font-serif text-[17px] font-medium tracking-tight text-text-primary">Signal &amp; State</span>
           </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
             {PUBLIC_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[13.5px] text-text-secondary transition-colors hover:text-text-primary"
+                className="rounded-lg px-3 py-2 text-[13.5px] text-text-secondary transition-colors hover:bg-surface-soft hover:text-text-primary"
               >
                 {item.label}
               </Link>
@@ -50,7 +50,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
             <ThemeToggle />
             <Link
               href="/demo"
-              className="hidden rounded-lg bg-brand px-3.5 py-2 text-[13.5px] font-medium text-white transition-colors hover:bg-brand-hover sm:inline-flex"
+              className="hidden rounded-lg bg-brand px-4 py-2 text-[13.5px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-md sm:inline-flex"
             >
               Launch live demo
             </Link>
@@ -63,8 +63,9 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-border bg-surface-soft">
-        <div className="mx-auto max-w-6xl px-5 py-12">
+      <footer className="relative overflow-hidden border-t border-border bg-surface">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+        <div className="relative mx-auto max-w-6xl px-5 py-14">
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             <div className="col-span-2 sm:col-span-1">
               <div className="flex items-center gap-2.5">
@@ -74,6 +75,12 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               <p className="mt-3 text-[13px] leading-relaxed text-text-secondary">
                 Turn customer signals into action.
               </p>
+              <Link
+                href="/demo"
+                className="mt-4 inline-flex rounded-lg border border-border-strong bg-surface px-3.5 py-2 text-[12.5px] font-medium text-text-primary transition-colors hover:border-brand/30 hover:text-brand"
+              >
+                Launch live demo
+              </Link>
             </div>
 
             <div>

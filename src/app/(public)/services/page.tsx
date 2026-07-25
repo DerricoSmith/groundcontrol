@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { Section, SectionHeading, PrimaryLink, HonestyNote } from "@/components/public/sections";
+import { Section, SectionHeading, PrimaryLink, HonestyNote, PageHero } from "@/components/public/sections";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -85,18 +85,11 @@ const SERVICES = [
 export default function ServicesPage() {
   return (
     <>
-      <Section className="pt-14">
-        <div className="max-w-3xl">
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">Services</p>
-          <h1 className="font-serif text-[32px] font-medium leading-[1.12] tracking-tight text-text-primary sm:text-[44px]">
-            Consulting that produces a working system, not a slide deck.
-          </h1>
-          <p className="mt-5 text-[16px] leading-relaxed text-text-secondary">
-            Signal &amp; State delivers customer intelligence work using Ground Control. The software is what makes the
-            engagement repeatable, and the engagement is what makes the software useful on day one.
-          </p>
-        </div>
-      </Section>
+      <PageHero
+        eyebrow="Services"
+        title="Consulting that produces a working system, not a slide deck."
+        description="Signal & State delivers customer intelligence work using Ground Control. The software is what makes the engagement repeatable, and the engagement is what makes the software useful on day one."
+      />
 
       <Section tone="soft">
         <div className="space-y-5">

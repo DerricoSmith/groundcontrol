@@ -45,7 +45,7 @@ export default async function DemoRisksPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div data-shot="risks" className="space-y-4">
         {data.risks.map((risk) => (
           <article key={risk.id} className="rounded-xl border border-border bg-surface p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">

@@ -88,7 +88,7 @@ export default async function DemoAccountDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <section className="rounded-xl border border-border bg-surface p-6">
+          <section data-shot="account-detail" className="rounded-xl border border-border bg-surface p-6">
             <h2 className="font-serif text-[19px] font-medium text-text-primary">How this score was produced</h2>
             <p className="mt-1 text-[13px] text-text-secondary">
               Model {health.calculationVersion}. Components with no supporting data are excluded and their weight is

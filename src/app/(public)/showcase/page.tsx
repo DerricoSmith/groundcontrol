@@ -32,34 +32,51 @@ export default function ShowcasePage() {
   return (
     <>
       {/* 1. Hero */}
-      <Section className="pt-14">
-        <div className="max-w-3xl">
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">The build story</p>
-          <h1 className="font-serif text-[34px] font-medium leading-[1.1] tracking-tight text-text-primary sm:text-[50px]">
-            I ran customer organizations for years. Then I built the system I kept wishing existed.
-          </h1>
-          <p className="mt-5 text-[16px] leading-relaxed text-text-secondary sm:text-[17px]">
-            Ground Control is a working customer intelligence platform. It scores customer health from evidence,
-            detects renewal risk with deterministic rules, explains every number it produces, and tells a leader what
-            should happen next. This page explains why it exists, how it decides, and what I designed and built myself.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink href="/demo">Launch live demo</PrimaryLink>
-            <SecondaryLink href="/contact">Contact Rico</SecondaryLink>
-          </div>
-        </div>
+      <section className="relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-brand-wash" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid mask-fade-b opacity-60" />
 
-        <nav aria-label="On this page" className="mt-12 rounded-xl border border-border bg-surface p-5">
-          <h2 className="text-[12px] font-medium uppercase tracking-wide text-text-muted">On this page</h2>
-          <ul className="mt-3 grid gap-x-6 gap-y-1.5 text-[13.5px] sm:grid-cols-2 lg:grid-cols-3">
-            {CONTENTS.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="text-text-secondary hover:text-brand">{label}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </Section>
+        <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-16 sm:pt-24">
+          <div className="max-w-3xl">
+            <p className="mb-4 flex items-center gap-2.5 text-[12px] font-medium uppercase tracking-[0.16em] text-brand">
+              <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
+              The build story
+            </p>
+            <h1 className="font-serif text-[36px] font-medium leading-[1.06] tracking-[-0.02em] text-text-primary sm:text-[54px]">
+              I ran customer organizations for years. Then I built the system I kept wishing existed.
+            </h1>
+            <p className="mt-6 text-[17px] leading-relaxed text-text-secondary sm:text-[18px]">
+              Ground Control is a working customer intelligence platform. It scores customer health from evidence,
+              detects renewal risk with deterministic rules, explains every number it produces, and tells a leader what
+              should happen next. This page explains why it exists, how it decides, and what I designed and built
+              myself.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <PrimaryLink href="/demo">Launch live demo</PrimaryLink>
+              <SecondaryLink href="/contact">Get in touch</SecondaryLink>
+            </div>
+          </div>
+
+          <nav
+            aria-label="On this page"
+            className="mt-14 rounded-xl border border-border bg-surface/90 p-6 backdrop-blur elevate"
+          >
+            <h2 className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-muted">On this page</h2>
+            <ul className="mt-4 grid gap-x-8 gap-y-2 text-[13.5px] sm:grid-cols-2 lg:grid-cols-3">
+              {CONTENTS.map(([id, label], index) => (
+                <li key={id}>
+                  <a href={`#${id}`} className="group flex items-baseline gap-2.5 text-text-secondary hover:text-brand">
+                    <span className="text-[11px] tabular-nums text-text-muted group-hover:text-brand">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </section>
 
       {/* 2. Why I Built It */}
       <Section tone="soft">

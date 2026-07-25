@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import { Section, SectionHeading, FeatureCard, PrimaryLink, SecondaryLink, HonestyNote, Prose } from "@/components/public/sections";
+import { AppFrame } from "@/components/public/app-frame";
 import { RISK_RULES } from "@/lib/services/risk-engine";
 
 export const metadata: Metadata = {
@@ -38,22 +39,41 @@ export default function GroundControlPage() {
 
   return (
     <>
-      <Section className="pt-14">
-        <div className="max-w-3xl">
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">Ground Control</p>
-          <h1 className="font-serif text-[32px] font-medium leading-[1.12] tracking-tight text-text-primary sm:text-[46px]">
-            See risk earlier. Know what to do next.
-          </h1>
-          <p className="mt-5 text-[16px] leading-relaxed text-text-secondary">
-            Ground Control gives growing B2B software companies a clear view of customer health, renewal risk, adoption,
-            escalation context, feedback, and expansion opportunity, together with the action that should happen next.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <PrimaryLink href="/demo">Launch live demo</PrimaryLink>
-            <SecondaryLink href="/contact?reason=pilot">Start a pilot</SecondaryLink>
+      <section className="relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-brand-wash" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid mask-radial opacity-60" />
+
+        <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-16 sm:pt-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-4 inline-flex items-center gap-2.5 text-[12px] font-medium uppercase tracking-[0.16em] text-brand">
+              <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
+              Ground Control
+            </p>
+            <h1 className="font-serif text-[36px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[52px]">
+              See risk earlier. Know what to do next.
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-text-secondary">
+              A clear view of customer health, renewal risk, adoption, escalation context, feedback, and expansion
+              opportunity, together with the action that should happen next.
+            </p>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
+              <PrimaryLink href="/demo">Launch live demo</PrimaryLink>
+              <SecondaryLink href="/contact?reason=pilot">Start a pilot</SecondaryLink>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-14 max-w-4xl">
+            <AppFrame
+              src="/screenshots/demo-risk-evidence.png"
+              alt="Risk radar listing open risk signals, each with what changed, the current state, supporting evidence, potential impact, recommended action, and a confidence percentage."
+              width={1440}
+              height={1400}
+              label="signal-and-state-ground-control.vercel.app/demo/risks"
+              className="max-h-[460px] overflow-hidden"
+            />
           </div>
         </div>
-      </Section>
+      </section>
 
       <Section tone="soft">
         <SectionHeading

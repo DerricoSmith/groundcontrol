@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from "next";
-import { Section, SectionHeading, Prose, PrimaryLink, SecondaryLink } from "@/components/public/sections";
+import { Section, SectionHeading, Prose, PrimaryLink, SecondaryLink, PageHero } from "@/components/public/sections";
 
 export const metadata: Metadata = {
   title: "About Rico Smith",
@@ -11,14 +11,10 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <Section className="pt-14">
-        <div className="max-w-3xl">
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">About</p>
-          <h1 className="font-serif text-[32px] font-medium leading-[1.12] tracking-tight text-text-primary sm:text-[44px]">
-            I spent my career running customer organizations. Ground Control is what I kept wishing existed.
-          </h1>
-        </div>
-      </Section>
+      <PageHero
+        eyebrow="About"
+        title="I spent my career running customer organizations. Ground Control is what I kept wishing existed."
+      />
 
       <Section tone="soft">
         <SectionHeading title="Background" />

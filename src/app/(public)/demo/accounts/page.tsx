@@ -44,7 +44,7 @@ export default async function DemoAccountsPage() {
       title="Customer portfolio"
       description="Every account, with what is known and what is missing. Open any row to see the evidence behind its score."
     >
-      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+      <div data-shot="portfolio" className="overflow-x-auto rounded-xl border border-border bg-surface">
         <table className="w-full min-w-[860px] text-left text-[13.5px]">
           <caption className="sr-only">Fictional customer accounts with health, revenue, renewal date, and open risk counts</caption>
           <thead>

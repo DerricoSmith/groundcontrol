@@ -67,6 +67,9 @@ export default async function DemoPage() {
         That sequence is a suggestion. Every page is reachable from the navigation above, in any order.
       </p>
 
+      {/* data-shot marks the product region the showcase screenshots capture,
+          so an image shows the application rather than the surrounding site. */}
+      <div data-shot="mission-control" className="rounded-xl bg-background p-1">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricTile label="Customer accounts" value={String(summary.accountCount)} note={`${summary.accountsMissingArr} without revenue on file`} />
         <MetricTile
@@ -170,6 +173,7 @@ export default async function DemoPage() {
             </p>
           </section>
         </div>
+      </div>
       </div>
     </DemoChrome>
   );

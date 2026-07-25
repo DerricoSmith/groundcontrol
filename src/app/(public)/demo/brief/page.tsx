@@ -30,7 +30,7 @@ export default async function DemoBriefPage() {
           No brief has been generated for the demonstration environment yet.
         </p>
       ) : (
-        <article className="rounded-xl border border-border bg-surface p-6 sm:p-8">
+        <article data-shot="brief" className="rounded-xl border border-border bg-surface p-6 sm:p-8">
           <header className="border-b border-border pb-5">
             <p className="text-[12px] font-medium uppercase tracking-wide text-brand">{data.brief.periodLabel}</p>
             <h2 className="mt-1 font-serif text-[22px] font-medium text-text-primary">

@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { Section, SectionHeading, Prose, HonestyNote } from "@/components/public/sections";
+import { Section, SectionHeading, Prose, HonestyNote, PageHero } from "@/components/public/sections";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -10,13 +10,12 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <Section className="pt-14">
+    <>
+      <PageHero eyebrow="Privacy" title="Privacy information" />
+
+      <Section className="!pt-0">
       <div className="max-w-3xl">
-        <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">Privacy</p>
-        <h1 className="font-serif text-[30px] font-medium leading-[1.14] tracking-tight text-text-primary sm:text-[40px]">
-          Privacy information
-        </h1>
-        <p className="mt-4 text-[13px] text-text-muted">Last updated 25 July 2026.</p>
+        <p className="text-[13px] text-text-muted">Last updated 25 July 2026.</p>
 
         <div className="mt-6">
           <HonestyNote>
@@ -113,6 +112,7 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
-    </Section>
+      </Section>
+    </>
   );
 }

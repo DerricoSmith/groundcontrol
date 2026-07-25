@@ -1,20 +1,36 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 
-/** Shared layout primitives for the public site, so spacing stays consistent. */
+/**
+ * Shared layout primitives for the public site.
+ *
+ * The visual language is a control room crossed with a business publication:
+ * generous space, a single indigo accent, hairline rules, and paper-like
+ * elevation. Depth comes from very soft shadows rather than heavy borders, and
+ * nothing is added that could be mistaken for data.
+ */
 
 export function Section({
   children,
   className = "",
   tone = "default",
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
-  tone?: "default" | "soft";
+  tone?: "default" | "soft" | "contrast";
+  id?: string;
 }) {
+  const toneClass =
+    tone === "soft"
+      ? "bg-surface-soft border-y border-border"
+      : tone === "contrast"
+        ? "bg-text-primary"
+        : "";
+
   return (
-    <section className={`${tone === "soft" ? "bg-surface-soft" : ""} ${className}`}>
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">{children}</div>
+    <section id={id} className={`${toneClass} ${className}`}>
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">{children}</div>
     </section>
   );
 }
@@ -24,29 +40,92 @@ export function SectionHeading({
   title,
   description,
   id,
+  align = "left",
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   id?: string;
+  align?: "left" | "center";
 }) {
   return (
-    <div className="max-w-3xl">
+    <div className={align === "center" ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
       {eyebrow && (
-        <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.14em] text-brand">{eyebrow}</p>
+        <p
+          className={`mb-3 flex items-center gap-2.5 text-[12px] font-medium uppercase tracking-[0.16em] text-brand ${
+            align === "center" ? "justify-center" : ""
+          }`}
+        >
+          <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
+          {eyebrow}
+        </p>
       )}
-      <h2 id={id} className="font-serif text-[26px] font-medium tracking-tight text-text-primary sm:text-[32px]">
+      <h2
+        id={id}
+        className="font-serif text-[28px] font-medium leading-[1.15] tracking-tight text-text-primary sm:text-[36px]"
+      >
         {title}
       </h2>
       {description && (
-        <p className="mt-3 text-[15px] leading-relaxed text-text-secondary sm:text-[16px]">{description}</p>
+        <p className="mt-4 text-[16px] leading-relaxed text-text-secondary sm:text-[17px]">{description}</p>
       )}
     </div>
   );
 }
 
+/**
+ * The standard page opener for secondary pages.
+ *
+ * Every public page gets the same treatment so the site reads as one thing:
+ * the brand wash, a fading grid, an eyebrow with a rule, and a serif headline.
+ * Before this existed each page rolled its own opener and the site looked
+ * assembled rather than designed.
+ */
+export function PageHero({
+  eyebrow,
+  title,
+  description,
+  children,
+  align = "left",
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  children?: React.ReactNode;
+  align?: "left" | "center";
+}) {
+  const centered = align === "center";
+
+  return (
+    <section className="relative overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-brand-wash" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid mask-fade-b opacity-60" />
+
+      <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-16 sm:pt-24">
+        <div className={centered ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}>
+          <p
+            className={`mb-4 flex items-center gap-2.5 text-[12px] font-medium uppercase tracking-[0.16em] text-brand ${
+              centered ? "justify-center" : ""
+            }`}
+          >
+            <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
+            {eyebrow}
+          </p>
+          <h1 className="font-serif text-[34px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[48px]">
+            {title}
+          </h1>
+          {description && (
+            <p className="mt-6 text-[17px] leading-relaxed text-text-secondary">{description}</p>
+          )}
+          {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Prose({ children }: { children: React.ReactNode }) {
-  return <div className="max-w-3xl space-y-4 text-[15px] leading-relaxed text-text-secondary">{children}</div>;
+  return <div className="max-w-3xl space-y-4 text-[15.5px] leading-[1.75] text-text-secondary">{children}</div>;
 }
 
 export function FeatureCard({
@@ -59,14 +138,30 @@ export function FeatureCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-surface p-6 transition-shadow duration-200 elevate hover:elevate-lg">
       {Icon && (
-        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand">
-          <Icon className="h-[17px] w-[17px]" strokeWidth={2.1} />
+        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-inset ring-brand/10">
+          <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
         </div>
       )}
-      <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">{children}</p>
+      <h3 className="text-[15.5px] font-medium text-text-primary">{title}</h3>
+      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{children}</p>
+    </div>
+  );
+}
+
+/** A card whose top edge carries the brand hairline. Used for emphasis, sparingly. */
+export function AccentCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rule-brand relative overflow-hidden rounded-xl border border-border bg-surface p-6 elevate">
+      <h3 className="text-[15.5px] font-medium text-text-primary">{title}</h3>
+      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{children}</p>
     </div>
   );
 }
@@ -75,7 +170,7 @@ export function PrimaryLink({ href, children }: { href: string; children: React.
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-center rounded-lg bg-brand px-5 py-2.5 text-[14.5px] font-medium text-white transition-colors hover:bg-brand-hover"
+      className="inline-flex items-center justify-center rounded-lg bg-brand px-5 py-3 text-[14.5px] font-medium text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       {children}
     </Link>
@@ -86,7 +181,7 @@ export function SecondaryLink({ href, children }: { href: string; children: Reac
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-center rounded-lg border border-border bg-surface px-5 py-2.5 text-[14.5px] font-medium text-text-primary transition-colors hover:bg-surface-soft"
+      className="inline-flex items-center justify-center rounded-lg border border-border-strong bg-surface px-5 py-3 text-[14.5px] font-medium text-text-primary transition-colors duration-200 hover:border-brand/30 hover:bg-brand-soft hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       {children}
     </Link>
@@ -100,8 +195,32 @@ export function SecondaryLink({ href, children }: { href: string; children: Reac
  */
 export function HonestyNote({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-lg border border-border bg-surface-soft px-4 py-3 text-[13px] leading-relaxed text-text-secondary">
-      {children}
-    </p>
+    <div className="flex gap-3 rounded-xl border border-border bg-surface-soft px-5 py-4">
+      <span aria-hidden="true" className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-warning-strong" />
+      <p className="text-[13.5px] leading-relaxed text-text-secondary">{children}</p>
+    </div>
+  );
+}
+
+/**
+ * A band of real facts about the product. Every figure here is checkable in
+ * the codebase or the demo; none is a performance metric, a customer count, or
+ * anything the company has not earned.
+ */
+export function FactBand({ facts }: { facts: { value: string; label: string }[] }) {
+  return (
+    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
+      {facts.map((fact) => (
+        <div key={fact.label} className="bg-surface px-5 py-6 text-center">
+          <dt className="sr-only">{fact.label}</dt>
+          <dd>
+            <span className="block font-serif text-[30px] font-medium tracking-tight text-text-primary tabular-nums">
+              {fact.value}
+            </span>
+            <span className="mt-1 block text-[12.5px] leading-snug text-text-muted">{fact.label}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

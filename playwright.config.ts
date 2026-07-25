@@ -63,6 +63,10 @@ export default defineConfig({
       // Passed through the env option rather than the command string so the
       // connection string never appears in a process listing.
       DATABASE_URL: E2E_DATABASE_URL,
+      // Lets the screenshot generator populate derived intelligence (health,
+      // risks, actions, brief) in the end-to-end database before capturing.
+      // The security suite still asserts the route rejects a wrong secret.
+      SEED_SECRET: "e2e-only-seed-secret",
     },
   },
   projects: [

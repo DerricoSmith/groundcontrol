@@ -115,7 +115,15 @@
 
   --health-strong: #15803d;
   --health-strong-soft: #ecfdf3;
-  --health-stable: #0891b2;
+  /*
+   * cyan-700 rather than cyan-600. The lighter cyan measures about 3.4:1
+   * against its own soft background, which fails AA for the badge text that
+   * uses this pair everywhere in the product. Every other step in the health
+   * scale already clears 4.5:1; this one did not, and the badge only appears
+   * once an account has actually been scored Stable, which is why it went
+   * unnoticed until the demo carried scored accounts.
+   */
+  --health-stable: #0e7490;
   --health-stable-soft: #ecfeff;
   --health-watch: #b45309;
   --health-watch-soft: #fffaeb;
@@ -287,6 +295,74 @@
   li > a,
   dd > a {
     @apply underline decoration-from-font underline-offset-2;
+  }
+}
+
+/*
+ * Surface treatments for the public site.
+ *
+ * The design language is a control room crossed with a business publication:
+ * calm, precise, and quietly technical. These utilities supply the depth and
+ * texture that a page of bordered rectangles lacks, without decoration for its
+ * own sake and without any element that could be mistaken for data.
+ */
+@layer utilities {
+  /*
+   * A faint measured grid, like graph paper under a plan. Masked so it fades
+   * out rather than ending on a hard edge, and low enough contrast that it
+   * reads as texture rather than as content.
+   */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: center;
+  }
+
+  /* Fades any background to nothing toward the bottom. */
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
+  }
+
+  /* Fades outward from the centre, for a texture sitting behind a hero. */
+  .mask-radial {
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 30%, transparent 75%);
+  }
+
+  /*
+   * A single soft wash of brand colour. One accent, used once per view, so it
+   * reads as atmosphere rather than as a gradient template.
+   */
+  .bg-brand-wash {
+    background-image:
+      radial-gradient(ellipse 60% 50% at 15% 0%, color-mix(in oklab, var(--brand) 10%, transparent), transparent 70%),
+      radial-gradient(ellipse 50% 45% at 85% 10%, color-mix(in oklab, var(--accent-blue) 8%, transparent), transparent 70%);
+  }
+
+  /* Card elevation. Two very soft shadows read as paper rather than as a box. */
+  .elevate {
+    box-shadow:
+      0 1px 2px color-mix(in oklab, var(--text-primary) 5%, transparent),
+      0 8px 24px -12px color-mix(in oklab, var(--text-primary) 12%, transparent);
+  }
+
+  .elevate-lg {
+    box-shadow:
+      0 2px 4px color-mix(in oklab, var(--text-primary) 4%, transparent),
+      0 24px 60px -24px color-mix(in oklab, var(--text-primary) 22%, transparent);
+  }
+
+  /* A hairline of brand colour along the top of a card. */
+  .rule-brand::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--brand), color-mix(in oklab, var(--brand) 35%, transparent), transparent);
   }
 }
 
