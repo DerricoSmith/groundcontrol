@@ -16,7 +16,7 @@
     "test:db:push": "node scripts/with-db.mjs TEST_DATABASE_URL prisma db push --skip-generate --accept-data-loss",
     "test": "npm run test:db:push && vitest run",
     "test:watch": "npm run test:db:push && vitest",
-    "test:e2e:db:reset": "node scripts/with-db.mjs E2E_DATABASE_URL prisma db push --skip-generate --accept-data-loss && node scripts/reset-test-schema.mjs E2E_DATABASE_URL",
+    "test:e2e:db:reset": "node scripts/with-db.mjs E2E_DATABASE_URL npx prisma db push --skip-generate --accept-data-loss && node scripts/reset-test-schema.mjs E2E_DATABASE_URL && node scripts/with-db.mjs E2E_DATABASE_URL node scripts/seed-demo-org.mjs",
     "test:e2e": "npm run test:e2e:db:reset && playwright test",
     "test:a11y": "npm run test:e2e:db:reset && playwright test --project=accessibility",
     "seed:demo": "node scripts/seed-demo-org.mjs"

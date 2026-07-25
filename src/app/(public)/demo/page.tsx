@@ -186,7 +186,9 @@ function MetricTile({
   note: string;
   tone?: "brand" | "danger" | "warning";
 }) {
-  const toneClass = tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-brand";
+  // warning-strong rather than warning: amber is legible as a dot or a bar but
+  // fails contrast as text on a light surface.
+  const toneClass = tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning-strong" : "text-brand";
   return (
     <div className="rounded-xl border border-border bg-surface p-5">
       <p className="text-[12.5px] font-medium text-text-secondary">{label}</p>

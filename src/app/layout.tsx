@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,31 +23,8 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600"],
 });
 
-/**
- * Resolved defensively. A malformed or missing NEXT_PUBLIC_APP_URL should
- * degrade to a sensible default, never fail the production build, which is
- * exactly what an unguarded `new URL()` here did on the first deploy.
- * Vercel supplies VERCEL_PROJECT_PRODUCTION_URL without a scheme.
- */
-function resolveSiteUrl(): URL {
-  const candidates = [
-    process.env.NEXT_PUBLIC_APP_URL?.trim(),
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined,
-    "http://localhost:3000",
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    try {
-      return new URL(candidate);
-    } catch {
-      // Try the next candidate rather than taking the build down.
-    }
-  }
-  return new URL("http://localhost:3000");
-}
-
-const siteUrl = resolveSiteUrl();
+// Shared with the sitemap and robots so all three agree on the canonical URL.
+// See src/lib/site.ts for why it resolves defensively.
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
