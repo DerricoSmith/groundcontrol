@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -22,13 +22,37 @@ const fraunces = Fraunces({
   weight: ["400", "500", "600"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+/**
+ * Resolved defensively. A malformed or missing NEXT_PUBLIC_APP_URL should
+ * degrade to a sensible default, never fail the production build, which is
+ * exactly what an unguarded `new URL()` here did on the first deploy.
+ * Vercel supplies VERCEL_PROJECT_PRODUCTION_URL without a scheme.
+ */
+function resolveSiteUrl(): URL {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL?.trim(),
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined,
+    "http://localhost:3000",
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      return new URL(candidate);
+    } catch {
+      // Try the next candidate rather than taking the build down.
+    }
+  }
+  return new URL("http://localhost:3000");
+}
+
+const siteUrl = resolveSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: siteUrl,
   title: {
-    default: "Signal & State · Turn customer signals into action",
-    template: "%s · Signal & State",
+    default: "Signal & State. Turn customer signals into action",
+    template: "%s | Signal & State",
   },
   description: "Customer intelligence for growing B2B software companies, by Signal & State.",
   applicationName: "Ground Control",
@@ -36,15 +60,15 @@ export const metadata: Metadata = {
   creator: "Signal & State",
   keywords: ["customer success", "customer intelligence", "churn risk", "renewals", "B2B SaaS"],
   openGraph: {
-    title: "Ground Control · Signal & State",
+    title: "Ground Control by Signal & State",
     description: "Customer intelligence for growing B2B software companies, by Signal & State.",
-    url: siteUrl,
+    url: siteUrl.toString(),
     siteName: "Ground Control",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ground Control · Signal & State",
+    title: "Ground Control by Signal & State",
     description: "Customer intelligence for growing B2B software companies, by Signal & State.",
   },
 };
