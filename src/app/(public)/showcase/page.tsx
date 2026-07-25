@@ -1,6 +1,6 @@
 ﻿import type { Metadata } from "next";
-import Link from "next/link";
 import { Section, SectionHeading, Prose, FeatureCard, PrimaryLink, SecondaryLink, HonestyNote } from "@/components/public/sections";
+import { ProductShot } from "@/components/public/product-shot";
 
 export const metadata: Metadata = {
   title: "The build story",
@@ -149,30 +149,84 @@ export default function ShowcasePage() {
           title="Product walkthrough"
           description="The demo is live and needs no account. This is the path I would walk you through."
         />
-        <ol className="mt-8 space-y-4">
-          {[
-            ["Mission Control", "What changed, what needs attention, revenue at risk, and what the data can currently support.", "/demo"],
-            ["Customer Portfolio", "Every account with saved views, sorting, and honest gaps. Unscored accounts read as unmeasured.", "/demo/accounts"],
-            ["Account Detail", "The full evidence chain: component scores, weights, confidence, and the individual records.", "/demo/accounts/harborline"],
-            ["Risk Radar", "Open risks with their six part explanation and revenue counted once per account.", "/demo/risks"],
-            ["Renewal Center", "Milestone plans and an explained forecast confidence category.", "/demo/renewals"],
-            ["Actions", "Suggested work carrying the evidence that produced it.", "/demo/actions"],
-            ["Executive Brief", "Sixteen sections including what the assessment cannot see.", "/demo/brief"],
-          ].map(([title, description, href], index) => (
-            <li key={title} className="flex gap-4 rounded-xl border border-border bg-surface p-5">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[12.5px] font-medium text-brand">
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="text-[15px] font-medium text-text-primary">{title}</h3>
-                <p className="mt-1 text-[13.5px] leading-relaxed text-text-secondary">{description}</p>
-                <Link href={href} className="mt-2 inline-block text-[13px] font-medium text-brand hover:text-brand-hover">
-                  Open in the demo
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <p className="mt-4 max-w-3xl text-[13.5px] text-text-muted">
+          Every screenshot below is the running product, captured from the fictional demonstration portfolio. No
+          company, person, or number in them is real.
+        </p>
+
+        <div className="mt-12 space-y-16">
+          <ProductShot
+            src="/screenshots/demo-mission-control.png"
+            alt="Mission Control showing fourteen customer accounts, revenue at risk, a list of accounts needing attention, and a health distribution across five bands."
+            width={1440}
+            height={1600}
+            title="Mission Control"
+            what="The first screen a customer success leader opens. Portfolio size, revenue at risk, renewals closing inside ninety days, and the accounts that need attention today."
+            why="It replaces the weekly ritual of assembling a picture from four systems. The revenue at risk figure counts each account once, never once per risk, so it matches what the business actually has at stake."
+            decision="Where to spend the next hour, and which account to open first."
+            designed="The decision to lead with what changed rather than a wall of metrics, and the rule that an account with no calculated score reads as unmeasured rather than being quietly counted as healthy."
+            demoHref="/demo"
+            demoLabel="Open Mission Control"
+          />
+
+          <ProductShot
+            src="/screenshots/demo-customer-portfolio.png"
+            alt="Customer portfolio table listing fourteen fictional accounts with owner, segment, revenue, renewal date, health band, open risk count, and data confidence."
+            width={1440}
+            height={1000}
+            title="Customer Portfolio"
+            what="Every account in one table, with saved views for at-risk, renewing soon, unowned, and incomplete records."
+            why="The gaps are as visible as the data. An account with no revenue on file says so rather than showing a zero that reads like a real number."
+            decision="Which segment or cohort to work through, and which records need fixing before the analysis can be trusted."
+            designed="The saved views, which are a fixed named set answering questions executives actually ask, rather than a filter builder nobody configures."
+            demoHref="/demo/accounts"
+            demoLabel="Explore the portfolio"
+            reverse
+          />
+
+          <ProductShot
+            src="/screenshots/demo-account-detail.png"
+            alt="Account detail for Harborline Freight showing the health score decomposed into five components, each with its own score, weight, confidence, and supporting evidence records."
+            width={1440}
+            height={1800}
+            title="Account Detail and health explanation"
+            what="One account, with its health score decomposed into five weighted components. Each shows its own score, its weight, its confidence, and the individual records behind it."
+            why="A score you cannot argue with is a score nobody acts on. This one can be checked line by line, and a component with no supporting data is excluded with its weight redistributed rather than averaged toward the middle."
+            decision="Whether the account is genuinely at risk, and which dimension to address first."
+            designed="The five component model, the confidence and weight redistribution rule, and the decision that missing evidence must lower certainty rather than quietly produce a passing grade."
+            demoHref="/demo/accounts/harborline"
+            demoLabel="Review Harborline Freight"
+          />
+
+          <ProductShot
+            src="/screenshots/demo-risk-evidence.png"
+            alt="Risk radar listing open risk signals, each with what changed, current state, supporting evidence, potential impact, recommended action, and a confidence percentage."
+            width={1440}
+            height={1400}
+            title="Risk explanation"
+            what="Open risks from eleven deterministic rules. Each carries what changed, the current state, the supporting evidence, the potential impact, the recommended response, and a confidence value."
+            why="The evidence is the product. A risk that says an account is disengaged is an opinion; one that names the interactions it counted and the threshold it compared against is something a team can act on or dismiss on the merits."
+            decision="Whether to escalate, and what to say when you do."
+            designed="The six part explanation structure, the rule that a human dismissal is never reopened by the machine, and the rule that no risk is ever raised from absent data."
+            demoHref="/demo/risks"
+            demoLabel="See the risk evidence"
+            reverse
+          />
+
+          <ProductShot
+            src="/screenshots/demo-executive-brief.png"
+            alt="Executive brief with sections covering executive summary, what changed, portfolio health, revenue at risk, upcoming renewals, data readiness, and what the assessment cannot see."
+            width={1440}
+            height={1600}
+            title="Executive Brief"
+            what="Sixteen sections assembled from counts, sums, and rules, including one section on what the assessment cannot see and another on how the brief was produced."
+            why="Leadership reads quickly. A section with nothing to report says so and says why, because no renewal dates on file and no upcoming renewals mean completely different things."
+            decision="What to raise at the leadership meeting, and what to tell the board about retention risk."
+            designed="The section set, and the requirement that the brief state its own limitations rather than presenting a confident summary of thin data."
+            demoHref="/demo/brief"
+            demoLabel="Read the Executive Brief"
+          />
+        </div>
       </Section>
 
       {/* 6. Customer Signals and Evidence */}
