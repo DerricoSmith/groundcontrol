@@ -1,4 +1,28 @@
-# Release progress — Ground Control Production Showcase v1
+# Release progress
+
+## v1.0.1 — Release Hardening (current)
+
+Deployed and verified 2026-07-25. All 45 production smoke checks pass.
+
+**Pre-hardening checkpoint:** `../ground-control-local-checkpoints/20260725-pre-hardening-v101/`, all 13 required artifacts verified present and non-empty.
+
+**Completed.**
+- Production cleanup. `Smoke Test Co` and the smoke lead removed by a narrow, idempotent, verifying script. Confirmed gone.
+- Preview separation. Preview on `gc_preview` with its own auth secret, enforced by `verify-database-separation.mjs`.
+- Seed reliability. Root cause found and fixed; the seed now verifies six scenarios and fails loudly on a partial write.
+- Accessibility automation. 19 tests, zero critical, zero serious, six real violations fixed.
+- Security hardening. Headers, CSP, robots, sitemap, health endpoint, 19 security tests, dependency advisories from six to three.
+- Screenshots and showcase walkthrough. Five annotated shots served through `next/image`.
+- Documentation. All 25 required documents plus 21 more.
+- Smoke suite. 45 automated checks that clean up after themselves.
+
+**Six defects found and fixed:** onboarding concurrency race, e2e database reset, the seed enum bug, and four accessibility barriers.
+
+**Not done, honestly.** Row Level Security remains deferred with the blocker documented. Rate limiting is still minimal. No screen reader testing. Five test categories remain partial. Preview and production still share a Neon instance, separated by schema.
+
+---
+
+## v1.0.0 — Production Showcase
 
 Status as of 2026-07-25, after the production deploy and smoke tests.
 
