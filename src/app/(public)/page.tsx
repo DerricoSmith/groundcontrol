@@ -72,8 +72,8 @@ export default function HomePage() {
             <AppFrame
               src="/screenshots/demo-mission-control.png"
               alt="Ground Control Mission Control showing fourteen fictional customer accounts, revenue at risk, a ranked list of accounts needing attention, and a health distribution across five bands."
-              width={1440}
-              height={1600}
+              width={1112}
+              height={1417}
               priority
               className="max-h-[560px] overflow-hidden"
             />
@@ -129,10 +129,9 @@ export default function HomePage() {
             <AppFrame
               src="/screenshots/demo-account-detail.png"
               alt="An account detail view showing a health score decomposed into five weighted components, each with its own score, weight, confidence percentage, and the individual records behind it."
-              width={1440}
-              height={1800}
+              width={734}
+              height={984}
               label="signal-and-state-ground-control.vercel.app/demo/accounts/harborline"
-              className="max-h-[520px] overflow-hidden"
             />
           </div>
 

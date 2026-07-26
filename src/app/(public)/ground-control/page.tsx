@@ -66,10 +66,9 @@ export default function GroundControlPage() {
             <AppFrame
               src="/screenshots/demo-risk-evidence.png"
               alt="Risk radar listing open risk signals, each with what changed, the current state, supporting evidence, potential impact, recommended action, and a confidence percentage."
-              width={1440}
-              height={1400}
+              width={1112}
+              height={782}
               label="signal-and-state-ground-control.vercel.app/demo/risks"
-              className="max-h-[460px] overflow-hidden"
             />
           </div>
         </div>

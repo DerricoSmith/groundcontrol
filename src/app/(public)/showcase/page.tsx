@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Section, SectionHeading, Prose, FeatureCard, PrimaryLink, SecondaryLink, HonestyNote } from "@/components/public/sections";
 import { ProductShot } from "@/components/public/product-shot";
@@ -196,8 +196,8 @@ export default function ShowcasePage() {
           <ProductShot
             src="/screenshots/demo-mission-control.png"
             alt="Mission Control showing fourteen customer accounts, revenue at risk, a list of accounts needing attention, and a health distribution across five bands."
-            width={1440}
-            height={1600}
+            width={1112}
+            height={1417}
             title="Mission Control"
             what="The first screen a customer success leader opens. Portfolio size, revenue at risk, renewals closing inside ninety days, and the accounts that need attention today."
             why="It replaces the weekly ritual of assembling a picture from four systems. The revenue at risk figure counts each account once, never once per risk, so it matches what the business actually has at stake."
@@ -210,8 +210,8 @@ export default function ShowcasePage() {
           <ProductShot
             src="/screenshots/demo-customer-portfolio.png"
             alt="Customer portfolio table listing fourteen fictional accounts with owner, segment, revenue, renewal date, health band, open risk count, and data confidence."
-            width={1440}
-            height={1000}
+            width={1112}
+            height={679}
             title="Customer Portfolio"
             what="Every account in one table, with saved views for at-risk, renewing soon, unowned, and incomplete records."
             why="The gaps are as visible as the data. An account with no revenue on file says so rather than showing a zero that reads like a real number."
@@ -225,8 +225,8 @@ export default function ShowcasePage() {
           <ProductShot
             src="/screenshots/demo-account-detail.png"
             alt="Account detail for Harborline Freight showing the health score decomposed into five components, each with its own score, weight, confidence, and supporting evidence records."
-            width={1440}
-            height={1800}
+            width={734}
+            height={984}
             title="Account Detail and health explanation"
             what="One account, with its health score decomposed into five weighted components. Each shows its own score, its weight, its confidence, and the individual records behind it."
             why="A score you cannot argue with is a score nobody acts on. This one can be checked line by line, and a component with no supporting data is excluded with its weight redistributed rather than averaged toward the middle."
@@ -239,8 +239,8 @@ export default function ShowcasePage() {
           <ProductShot
             src="/screenshots/demo-risk-evidence.png"
             alt="Risk radar listing open risk signals, each with what changed, current state, supporting evidence, potential impact, recommended action, and a confidence percentage."
-            width={1440}
-            height={1400}
+            width={1112}
+            height={782}
             title="Risk explanation"
             what="Open risks from eleven deterministic rules. Each carries what changed, the current state, the supporting evidence, the potential impact, the recommended response, and a confidence value."
             why="The evidence is the product. A risk that says an account is disengaged is an opinion; one that names the interactions it counted and the threshold it compared against is something a team can act on or dismiss on the merits."
@@ -254,8 +254,8 @@ export default function ShowcasePage() {
           <ProductShot
             src="/screenshots/demo-executive-brief.png"
             alt="Executive brief with sections covering executive summary, what changed, portfolio health, revenue at risk, upcoming renewals, data readiness, and what the assessment cannot see."
-            width={1440}
-            height={1600}
+            width={1112}
+            height={1682}
             title="Executive Brief"
             what="Sixteen sections assembled from counts, sums, and rules, including one section on what the assessment cannot see and another on how the brief was produced."
             why="Leadership reads quickly. A section with nothing to report says so and says why, because no renewal dates on file and no upcoming renewals mean completely different things."

@@ -27,7 +27,15 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/80 backdrop-blur-xl">
+      {/*
+        data-site-header lets the screenshot generator hide this. It is sticky,
+        so it sits over the top of any product region captured below it and
+        would otherwise be baked into the marketing images.
+      */}
+      <header
+        data-site-header=""
+        className="sticky top-0 z-40 border-b border-border/80 bg-surface/80 backdrop-blur-xl"
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
           <Link href="/" className="group flex items-center gap-2.5" aria-label="Signal and State home">
             <LogoMark className="h-7 w-7 transition-transform duration-200 group-hover:scale-105" />

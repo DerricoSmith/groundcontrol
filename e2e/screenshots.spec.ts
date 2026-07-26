@@ -42,6 +42,13 @@ async function prepare(page: Page) {
   await page.addStyleTag({
     content: `
       nextjs-portal { display: none !important; }
+      /*
+        Playwright captures an element's box as it appears in the viewport, so
+        anything painted over that box lands in the image. The site header is
+        sticky and the mobile bar is fixed, which is why the marketing shots
+        were showing the site's own navigation, clipped, inside a browser frame.
+      */
+      [data-site-header], nav.fixed { display: none !important; }
       *, *::before, *::after {
         animation-duration: 0s !important;
         animation-delay: 0s !important;
@@ -77,7 +84,7 @@ async function captureRegion(
   path: string,
   name: string,
   selector: string,
-  maxHeight?: number
+  maxItems?: number
 ) {
   await page.goto(path);
   const region = page.locator(selector).first();
@@ -85,16 +92,23 @@ async function captureRegion(
   await prepare(page);
 
   // A list of 32 risks produces a very tall, very heavy image that reads as a
-  // strip rather than as a screen. Clipping to a sensible height keeps the
-  // aspect ratio usable and the file small, and the demo is one click away for
-  // anyone who wants the whole list.
-  if (maxHeight) {
-    await region.evaluate((element, height) => {
-      const node = element as HTMLElement;
-      node.style.maxHeight = `${height}px`;
-      node.style.overflow = "hidden";
-    }, maxHeight);
+  // strip rather than as a screen. Dropping whole cards rather than clipping at
+  // a pixel height means the bottom edge falls between two cards instead of
+  // through the middle of a sentence, which is what made these look accidental.
+  if (maxItems) {
+    await region.evaluate((element, count) => {
+      Array.from(element.children)
+        .slice(count)
+        .forEach((child) => child.remove());
+    }, maxItems);
   }
+
+  // The sticky header is hidden, but the region can still be scrolled under
+  // where it was. Bring the top of the region to the top of the viewport so the
+  // capture starts on the region's own first pixel.
+  await region.evaluate((element) => {
+    element.scrollIntoView({ block: "start", behavior: "instant" });
+  });
 
   await region.screenshot({ path: resolve(OUTPUT_DIR, name), animations: "disabled" });
 }
@@ -109,7 +123,7 @@ test.describe("demo screenshots", () => {
     await captureRegion(page, "/demo", "demo-mission-control.png", '[data-shot="mission-control"]');
     await captureRegion(page, "/demo/accounts", "demo-customer-portfolio.png", '[data-shot="portfolio"]');
     await captureRegion(page, "/demo/accounts/harborline", "demo-account-detail.png", '[data-shot="account-detail"]');
-    await captureRegion(page, "/demo/risks", "demo-risk-evidence.png", '[data-shot="risks"]', 900);
+    await captureRegion(page, "/demo/risks", "demo-risk-evidence.png", '[data-shot="risks"]', 3);
 
     // The executive brief exists only after the intelligence pipeline has run,
     // which the end-to-end seed does not do. Skip rather than overwrite a good
@@ -117,12 +131,12 @@ test.describe("demo screenshots", () => {
     await page.goto("/demo/brief");
     const brief = page.locator('[data-shot="brief"]');
     if ((await brief.count()) > 0) {
-      await captureRegion(page, "/demo/brief", "demo-executive-brief.png", '[data-shot="brief"]', 1100);
+      await captureRegion(page, "/demo/brief", "demo-executive-brief.png", '[data-shot="brief"]', 6);
     } else {
       console.log("Skipping the executive brief capture: no brief in this database.");
     }
 
-    await captureRegion(page, "/demo/actions", "demo-recommended-actions.png", "main > div > div:last-child", 900);
+    await captureRegion(page, "/demo/actions", "demo-recommended-actions.png", "main > div > div:last-child", 4);
     await capture(page, "/demo/renewals", "demo-renewals.png", /Renewal center/i);
   });
 
