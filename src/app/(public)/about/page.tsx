@@ -16,26 +16,65 @@ export default function AboutPage() {
         title="I spent my career running customer organizations. Ground Control is what I kept wishing existed."
       />
 
+      {/*
+        Two columns rather than one. A single measure-constrained column on a
+        wide screen leaves half the page empty, which reads as unfinished. The
+        sidebar carries the scannable version for anyone who will not read four
+        paragraphs, which on an about page is most people.
+      */}
       <Section tone="soft">
-        <SectionHeading title="Background" />
-        <Prose>
-          <p>
-            I am Rico Smith. I am a Customer Success and Customer Experience executive. I helped scale an enterprise
-            software company from zero to approximately forty million dollars in annual recurring revenue, and I later
-            advised across a customer portfolio exceeding one hundred and fifty million dollars.
-          </p>
-          <p>
-            My work has covered customer success, customer experience, onboarding, implementation, support, retention,
-            renewals, expansion, escalation management, executive engagement, product feedback, customer operations, AI
-            transformation, ecommerce, and global operations.
-          </p>
-          <p>
-            I have worked extensively across the United States and Asia, including considerable time doing business in
-            Japan. That shaped how I think about customer operations more than any framework did. The same account
-            signal means different things in different markets, and a system that ignores context produces confident
-            answers that are wrong.
-          </p>
-        </Prose>
+        <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+          <div>
+            <SectionHeading title="Background" />
+            <Prose>
+              <p>
+                I&apos;m Rico Smith, a Customer Success and Customer Experience executive. I have spent my career
+                building and leading the customer organizations inside enterprise software companies, through
+                hypergrowth and through the harder years that follow it.
+              </p>
+              <p>
+                I have owned retention, renewals, escalation, and executive relationships at scale. I have built
+                customer operating models from nothing, rebuilt ones that had stopped working, and advised leadership
+                teams on where their customer base was actually heading rather than where the dashboard said it was.
+              </p>
+              <p>
+                I have worked extensively across the United States and Asia, including considerable time doing business
+                in Japan. That shaped how I think about customer operations more than any framework did. The same
+                account signal means different things in different markets, and a system that ignores context produces
+                confident answers that are wrong.
+              </p>
+            </Prose>
+          </div>
+
+          <aside className="lg:pt-16">
+            <div className="rounded-xl border border-border bg-surface p-6 elevate sm:p-7">
+              <h3 className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-muted">
+                Where I have operated
+              </h3>
+              <ul className="mt-5 grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-1">
+                {[
+                  "Customer Success leadership",
+                  "Customer Experience strategy",
+                  "Onboarding and implementation",
+                  "Support and escalation management",
+                  "Retention and renewals",
+                  "Expansion and account growth",
+                  "Executive engagement",
+                  "Product feedback and voice of customer",
+                  "Customer operations",
+                  "AI transformation",
+                  "Ecommerce",
+                  "Global operations",
+                ].map((area) => (
+                  <li key={area} className="flex items-start gap-2.5 text-[14px] leading-snug text-text-secondary">
+                    <span aria-hidden="true" className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand" />
+                    {area}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        </div>
       </Section>
 
       <Section>
@@ -82,10 +121,10 @@ export default function AboutPage() {
 
       <Section>
         <div className="rounded-2xl border border-border bg-surface p-8 sm:p-12">
-          <h2 className="font-serif text-[24px] font-medium tracking-tight text-text-primary sm:text-[30px]">
+          <h2 className="type-h2 font-serif font-medium text-text-primary">
             Let us talk about your customer operation.
           </h2>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-text-secondary">
+          <p className="type-lead measure mt-4 text-text-secondary">
             Whether you want the software, the advisory work, or a conversation about what your data can already tell
             you.
           </p>

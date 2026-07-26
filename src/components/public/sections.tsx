@@ -60,15 +60,10 @@ export function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2
-        id={id}
-        className="font-serif text-[28px] font-medium leading-[1.15] tracking-tight text-text-primary sm:text-[36px]"
-      >
+      <h2 id={id} className="type-h2 font-serif font-medium text-text-primary">
         {title}
       </h2>
-      {description && (
-        <p className="mt-4 text-[16px] leading-relaxed text-text-secondary sm:text-[17px]">{description}</p>
-      )}
+      {description && <p className="type-lead measure mt-5 text-text-secondary">{description}</p>}
     </div>
   );
 }
@@ -111,11 +106,11 @@ export function PageHero({
             <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
             {eyebrow}
           </p>
-          <h1 className="font-serif text-[34px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[48px]">
-            {title}
-          </h1>
+          <h1 className="type-h1 font-serif font-medium text-text-primary">{title}</h1>
           {description && (
-            <p className="mt-6 text-[17px] leading-relaxed text-text-secondary">{description}</p>
+            <p className={`type-lead mt-6 text-text-secondary ${centered ? "mx-auto measure" : "measure"}`}>
+              {description}
+            </p>
           )}
           {children}
         </div>
@@ -124,8 +119,15 @@ export function PageHero({
   );
 }
 
+/**
+ * Long-form copy.
+ *
+ * The first paragraph is treated as a lead: larger, darker, and set at the
+ * primary text colour. It gives a section an entry point and stops a wall of
+ * uniform grey, which is most of what made the page feel flat.
+ */
 export function Prose({ children }: { children: React.ReactNode }) {
-  return <div className="max-w-3xl space-y-4 text-[15.5px] leading-[1.75] text-text-secondary">{children}</div>;
+  return <div className="prose-block type-body measure mt-6 space-y-5 text-text-secondary">{children}</div>;
 }
 
 export function FeatureCard({
@@ -144,8 +146,8 @@ export function FeatureCard({
           <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
         </div>
       )}
-      <h3 className="text-[15.5px] font-medium text-text-primary">{title}</h3>
-      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{children}</p>
+      <h3 className="text-[16px] font-medium leading-snug tracking-[-0.011em] text-text-primary">{title}</h3>
+      <p className="type-small mt-2.5 text-text-secondary">{children}</p>
     </div>
   );
 }
@@ -160,8 +162,8 @@ export function AccentCard({
 }) {
   return (
     <div className="rule-brand relative overflow-hidden rounded-xl border border-border bg-surface p-6 elevate">
-      <h3 className="text-[15.5px] font-medium text-text-primary">{title}</h3>
-      <p className="mt-2 text-[14px] leading-relaxed text-text-secondary">{children}</p>
+      <h3 className="text-[16px] font-medium leading-snug tracking-[-0.011em] text-text-primary">{title}</h3>
+      <p className="type-small mt-2.5 text-text-secondary">{children}</p>
     </div>
   );
 }

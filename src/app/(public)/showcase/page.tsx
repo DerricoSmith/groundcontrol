@@ -42,10 +42,10 @@ export default function ShowcasePage() {
               <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
               The build story
             </p>
-            <h1 className="font-serif text-[36px] font-medium leading-[1.06] tracking-[-0.02em] text-text-primary sm:text-[54px]">
+            <h1 className="type-display font-serif font-medium text-text-primary">
               I ran customer organizations for years. Then I built the system I kept wishing existed.
             </h1>
-            <p className="mt-6 text-[17px] leading-relaxed text-text-secondary sm:text-[18px]">
+            <p className="type-lead measure-wide mt-6 text-text-secondary">
               Ground Control is a working customer intelligence platform. It scores customer health from evidence,
               detects renewal risk with deterministic rules, explains every number it produces, and tells a leader what
               should happen next. This page explains why it exists, how it decides, and what I designed and built
@@ -83,12 +83,15 @@ export default function ShowcasePage() {
         <SectionHeading id="why" eyebrow="01" title="Why I built it" />
         <Prose>
           <p>
-            I am Rico Smith. I helped scale an enterprise software company from zero to approximately forty million
-            dollars in annual recurring revenue, and I later advised across a customer portfolio exceeding one hundred
-            and fifty million dollars. My work has spanned customer success, customer experience, onboarding,
-            implementation, support, retention, renewals, expansion, escalation management, executive engagement,
-            product feedback, customer operations, AI transformation, ecommerce, and global operations, across the
-            United States and Asia including considerable time doing business in Japan.
+            I&apos;m Rico Smith, a Customer Success and Customer Experience executive. I have built and led the customer
+            organizations inside enterprise software companies through hypergrowth and through the harder years that
+            follow it, owning retention, renewals, escalation, and executive relationships at scale.
+          </p>
+          <p>
+            That work has spanned customer success, customer experience, onboarding, implementation, support,
+            retention, renewals, expansion, escalation management, executive engagement, product feedback, customer
+            operations, AI transformation, ecommerce, and global operations, across the United States and Asia
+            including considerable time doing business in Japan.
           </p>
           <p>
             Across those organizations, one pattern kept surfacing. The accounts that were hardest to save were the

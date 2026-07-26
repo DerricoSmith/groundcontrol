@@ -46,11 +46,11 @@ export default function HomePage() {
               Live demo, no account required
             </p>
 
-            <h1 className="font-serif text-[38px] font-medium leading-[1.06] tracking-[-0.02em] text-text-primary sm:text-[60px]">
+            <h1 className="type-display font-serif font-medium text-text-primary">
               Turn customer signals into action.
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-text-secondary sm:text-[19px]">
+            <p className="type-lead measure-tight mx-auto mt-6 text-text-secondary">
               Signal &amp; State helps growing companies identify customer risk, strengthen retention, improve
               adoption, and build more intelligent customer operations.
             </p>
@@ -201,10 +201,10 @@ export default function HomePage() {
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-grid mask-fade-b opacity-60" />
         <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-serif text-[30px] font-medium leading-tight tracking-tight text-text-primary sm:text-[40px]">
+            <h2 className="type-h2 font-serif font-medium text-text-primary">
               See it working before you talk to anyone.
             </h2>
-            <p className="mt-5 text-[16px] leading-relaxed text-text-secondary sm:text-[17px]">
+            <p className="type-lead measure-tight mx-auto mt-5 text-text-secondary">
               The live demo opens on a fictional fourteen account portfolio with real scoring, real risk rules, and a
               real executive brief. It takes about two minutes to understand what the product does.
             </p>

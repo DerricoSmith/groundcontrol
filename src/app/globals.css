@@ -280,6 +280,27 @@
   }
   html {
     @apply font-sans;
+    /* Kerning and common ligatures on by default; contextual alternates off,
+       since they cause noticeable jitter in tabular product data. */
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 0;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Fraunces carries an optical size axis. Letting the browser drive it means
+   * a 60px headline gets the high-contrast, tightly-fitted cut it was drawn
+   * for, while a 19px subhead gets the sturdier one. Without this every size
+   * renders from the same outline and large type looks soft.
+   */
+  .font-serif {
+    font-optical-sizing: auto;
+    font-variant-ligatures: common-ligatures;
+  }
+
+  /* Numbers should never reflow as a value changes. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
   }
 
   /*
@@ -295,6 +316,96 @@
   li > a,
   dd > a {
     @apply underline decoration-from-font underline-offset-2;
+  }
+}
+
+/*
+ * Type scale for the public site.
+ *
+ * Three rules do most of the work here:
+ *
+ *  1. Tracking tightens as size grows. Type drawn for body copy looks loose
+ *     at 60px, and the same tracking at 15px would look cramped.
+ *  2. Line height loosens as size shrinks. A headline wants 1.05; a paragraph
+ *     wants 1.7 so the eye can find the next line.
+ *  3. Measure is capped in characters, not pixels. A 68 character line is
+ *     comfortable at any font size; a 768px container is only comfortable at
+ *     one of them.
+ */
+@layer utilities {
+  .type-display {
+    font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.028em;
+  }
+
+  .type-h1 {
+    font-size: clamp(2.125rem, 1.55rem + 2.3vw, 3.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.024em;
+  }
+
+  .type-h2 {
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+    line-height: 1.14;
+    letter-spacing: -0.02em;
+  }
+
+  .type-h3 {
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+  }
+
+  /* The paragraph that follows a headline. Larger and darker than body copy. */
+  .type-lead {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem);
+    line-height: 1.6;
+    letter-spacing: -0.004em;
+  }
+
+  .type-body {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    letter-spacing: -0.002em;
+  }
+
+  .type-small {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /*
+   * Reading measure in characters rather than pixels, so a line stays
+   * comfortable at any font size instead of only at the one the container was
+   * designed around.
+   */
+  .measure {
+    max-width: 68ch;
+  }
+
+  .measure-wide {
+    max-width: 76ch;
+  }
+
+  /* Centred copy needs a shorter line: the eye has no left edge to return to. */
+  .measure-tight {
+    max-width: 52ch;
+  }
+
+  /*
+   * Long-form copy. The opening paragraph is set larger and in the primary
+   * text colour so a section has an entry point, which is most of what stops
+   * a page reading as an undifferentiated wall of grey.
+   *
+   * Written as plain CSS rather than a Tailwind variant because variants
+   * cannot reliably target a custom utility class.
+   */
+  .prose-block > p:first-child {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem);
+    line-height: 1.6;
+    letter-spacing: -0.004em;
+    color: var(--text-primary);
   }
 }
 

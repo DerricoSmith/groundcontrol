@@ -26,10 +26,8 @@ export default async function ContactPage({
             <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
             Contact
           </p>
-          <h1 className="font-serif text-[34px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[46px]">
-            Start a conversation.
-          </h1>
-          <p className="mt-5 text-[15.5px] leading-relaxed text-text-secondary">
+          <h1 className="type-h1 font-serif font-medium text-text-primary">Start a conversation.</h1>
+          <p className="type-lead mt-5 text-text-secondary">
             Whether you want a pilot, advisory work, or a straight answer about whether Ground Control fits your
             situation, this reaches the Signal &amp; State team directly.
           </p>

@@ -49,10 +49,10 @@ export default function GroundControlPage() {
               <span aria-hidden="true" className="h-px w-6 bg-brand/40" />
               Ground Control
             </p>
-            <h1 className="font-serif text-[36px] font-medium leading-[1.08] tracking-[-0.02em] text-text-primary sm:text-[52px]">
+            <h1 className="type-display font-serif font-medium text-text-primary">
               See risk earlier. Know what to do next.
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-text-secondary">
+            <p className="type-lead measure-tight mx-auto mt-6 text-text-secondary">
               A clear view of customer health, renewal risk, adoption, escalation context, feedback, and expansion
               opportunity, together with the action that should happen next.
             </p>
