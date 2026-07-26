@@ -197,10 +197,10 @@ export default function GroundControlPage() {
 
       <Section>
         <div className="rounded-2xl border border-border bg-surface p-8 sm:p-12">
-          <h2 className="font-serif text-[26px] font-medium tracking-tight text-text-primary sm:text-[30px]">
+          <h2 className="type-h2 font-serif font-medium text-text-primary">
             Open the demo and judge it yourself.
           </h2>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-text-secondary">
+          <p className="type-lead measure mt-4 text-text-secondary">
             Fourteen fictional accounts, scored by the model described above, with the evidence behind every number.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">

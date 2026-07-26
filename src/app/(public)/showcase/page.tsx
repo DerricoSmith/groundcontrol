@@ -563,10 +563,10 @@ export default function ShowcasePage() {
       {/* 18 and 19. Demo and contact calls to action */}
       <Section tone="soft">
         <div className="rounded-2xl border border-border bg-surface p-8 sm:p-12">
-          <h2 className="font-serif text-[26px] font-medium tracking-tight text-text-primary sm:text-[34px]">
+          <h2 className="type-h2 font-serif font-medium text-text-primary">
             The fastest way to judge this is to open it.
           </h2>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-text-secondary">
+          <p className="type-lead measure mt-4 text-text-secondary">
             The demo needs no account. Fourteen fictional accounts, scored by the model described above, with the
             evidence behind every number and an executive brief at the end.
           </p>

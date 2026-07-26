@@ -95,10 +95,10 @@ export default function ServicesPage() {
         <div className="space-y-5">
           {SERVICES.map((service) => (
             <article key={service.key} className="rounded-xl border border-border bg-surface p-6 sm:p-8">
-              <h2 className="font-serif text-[21px] font-medium tracking-tight text-text-primary sm:text-[24px]">
+              <h2 className="type-h3 font-serif font-medium text-text-primary">
                 {service.name}
               </h2>
-              <p className="mt-2 text-[15px] leading-relaxed text-text-secondary">{service.summary}</p>
+              <p className="type-body measure mt-2.5 text-text-secondary">{service.summary}</p>
 
               <div className="mt-5 grid gap-6 sm:grid-cols-2">
                 <div>
