@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from "next";
+import Image from "next/image";
 import { Section, SectionHeading, Prose, FeatureCard, PrimaryLink, SecondaryLink, HonestyNote } from "@/components/public/sections";
 import { ProductShot } from "@/components/public/product-shot";
 
@@ -81,6 +82,23 @@ export default function ShowcasePage() {
       {/* 2. Why I Built It */}
       <Section tone="soft">
         <SectionHeading id="why" eyebrow="01" title="Why I built it" />
+
+        {/* A byline. The build story is written in first person, so it should show whose voice it is. */}
+        <div className="mb-8 flex items-center gap-3.5">
+          <Image
+            src="/rico-smith.jpg"
+            alt=""
+            width={400}
+            height={400}
+            sizes="56px"
+            className="h-14 w-14 rounded-full object-cover ring-1 ring-border"
+          />
+          <div>
+            <span className="block text-[14.5px] font-medium text-text-primary">Rico Smith</span>
+            <span className="block text-[13px] text-text-secondary">Founder, Signal &amp; State</span>
+          </div>
+        </div>
+
         <Prose>
           <p>
             I&apos;m Rico Smith, a Customer Success and Customer Experience executive. I have built and led the customer

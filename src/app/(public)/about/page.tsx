@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from "next";
+import Image from "next/image";
 import { Section, SectionHeading, Prose, PrimaryLink, SecondaryLink, PageHero } from "@/components/public/sections";
 
 export const metadata: Metadata = {
@@ -47,6 +48,27 @@ export default function AboutPage() {
           </div>
 
           <aside className="lg:pt-16">
+            {/*
+              The source portrait is 400px square, so it is displayed at 192px
+              or less. Anything larger would upscale and soften, which on the
+              one photograph of the founder is the wrong trade.
+            */}
+            <figure className="mb-7">
+              <Image
+                src="/rico-smith.jpg"
+                alt="Rico Smith, photographed against a plain grey background."
+                width={400}
+                height={400}
+                sizes="192px"
+                priority
+                className="w-40 rounded-xl object-cover ring-1 ring-border elevate sm:w-48"
+              />
+              <figcaption className="mt-4">
+                <span className="block text-[15px] font-medium text-text-primary">Rico Smith</span>
+                <span className="block text-[13.5px] text-text-secondary">Founder, Signal &amp; State</span>
+              </figcaption>
+            </figure>
+
             <div className="rounded-xl border border-border bg-surface p-6 elevate sm:p-7">
               <h3 className="text-[12px] font-medium uppercase tracking-[0.14em] text-text-muted">
                 Where I have operated
