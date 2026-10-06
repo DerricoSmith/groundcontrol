@@ -86,7 +86,8 @@ async function buildWorkspaceContext() {
   });
 }
 
-function rulesFallback(question: string, reason: string, startedAt: number): AIResponse {
+/** `reason` is set only when Claude was expected to answer and didn't; plain demo mode leaves it empty. */
+function rulesFallback(question: string, reason: string | undefined, startedAt: number): AIResponse {
   return {
     ...getAIResponse(question),
     meta: { source: "rules", latencyMs: Date.now() - startedAt, fallbackReason: reason },
@@ -96,8 +97,8 @@ function rulesFallback(question: string, reason: string, startedAt: number): AIR
 export async function answerQuestion(question: string, engine: "auto" | "rules" = "auto"): Promise<AIResponse> {
   const startedAt = Date.now();
 
-  if (engine === "rules") return rulesFallback(question, "rule engine requested", startedAt);
-  if (!process.env.ANTHROPIC_API_KEY) return rulesFallback(question, "no ANTHROPIC_API_KEY set", startedAt);
+  // No key = demo mode: the built-in engine answers, no API call, nothing flagged as an error.
+  if (engine === "rules" || !process.env.ANTHROPIC_API_KEY) return rulesFallback(question, undefined, startedAt);
 
   const client = new Anthropic();
 

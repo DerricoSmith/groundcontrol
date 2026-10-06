@@ -135,7 +135,7 @@ for (const engine of ENGINES) {
   };
   console.log(`\nResolution accuracy: ${summary.resolutionAccuracy}`);
   console.log(`Median latency: ${summary.medianLatencyMs} ms   Total cost: $${summary.totalCostUsd}`);
-  if (fellBack.length) console.log(`Note: ${fellBack.length} answers fell back to the rule engine (${fellBack[0].fallbackReason}).`);
+  if (fellBack.length) console.log(`Note: ${fellBack.length} answers came from the rule engine (${fellBack[0].fallbackReason ?? "no ANTHROPIC_API_KEY set"}).`);
   report.engines[engine] = { summary, rows };
 }
 

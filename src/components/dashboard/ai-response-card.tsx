@@ -10,6 +10,8 @@ import type { AIResponse, AIResponseMeta } from "@/lib/ai-response";
 function SourceBadge({ meta }: { meta: AIResponseMeta }) {
   const seconds = `${(meta.latencyMs / 1000).toFixed(1)}s`;
   if (meta.source === "rules") {
+    // Demo mode is the normal experience; only label a rule-engine answer when it stood in for a failed Claude call.
+    if (!meta.fallbackReason) return null;
     return (
       <span
         title={meta.fallbackReason}
