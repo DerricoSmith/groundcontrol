@@ -11,6 +11,8 @@ import { LogoMark } from "@/components/brand/logo-mark";
 import { navItems } from "./nav-items";
 import { logoutAction } from "@/lib/actions/auth-actions";
 import { cn } from "@/lib/utils";
+import type { TimeZoneId } from "@/lib/timezone";
+import { TimezoneMenu } from "./timezone-menu";
 
 interface FounderInfo {
   name: string;
@@ -20,7 +22,7 @@ interface FounderInfo {
   avatarInitials: string;
 }
 
-export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: boolean }) {
+export function MobileMenu({ founder, isLive, timeZone }: { founder: FounderInfo; isLive: boolean; timeZone: TimeZoneId }) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
@@ -64,12 +66,17 @@ export function MobileMenu({ founder, isLive }: { founder: FounderInfo; isLive: 
           >
             <ExternalLink className="h-5 w-5 text-text-muted" strokeWidth={2} /> Portfolio case study
           </Link>
-          <button
-            onClick={() => toast("Settings are disabled in this public demo.")}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary"
-          >
-            <Settings className="h-5 w-5 text-text-muted" strokeWidth={2} /> Settings
-          </button>
+          <TimezoneMenu
+            timeZone={timeZone}
+            side="bottom"
+            trigger={(current) => (
+              <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary">
+                <Settings className="h-5 w-5 text-text-muted" strokeWidth={2} />
+                <span className="flex-1 text-left">Settings</span>
+                <span className="rounded-md bg-surface-soft px-1.5 py-0.5 text-[12px] font-medium text-text-muted">{current.short}</span>
+              </button>
+            )}
+          />
           <button
             onClick={() => toast("Help & support isn't wired up in this portfolio demo.")}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] text-text-secondary"

@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import type { TimeZoneId } from "@/lib/timezone";
 
 interface FounderInfo {
   name: string;
@@ -32,17 +33,19 @@ export function Topbar({
   founder,
   isLive,
   userEmail,
+  timeZone,
 }: {
   founder: FounderInfo;
   isLive: boolean;
   userEmail: string | null;
+  timeZone: TimeZoneId;
 }) {
   const pathname = usePathname();
   const current = navItems.find((item) => item.href === pathname);
 
   return (
     <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
-      <MobileMenu founder={founder} isLive={isLive} />
+      <MobileMenu founder={founder} isLive={isLive} timeZone={timeZone} />
 
       <div className="hidden min-w-0 flex-col leading-tight lg:flex">
         <h1 className="truncate text-[15px] font-semibold tracking-tight text-text-primary">{current?.label ?? "Ground Control"}</h1>

@@ -8,6 +8,8 @@ import { navItems } from "./nav-items";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { logoutAction } from "@/lib/actions/auth-actions";
 import { cn } from "@/lib/utils";
+import type { TimeZoneId } from "@/lib/timezone";
+import { TimezoneMenu } from "./timezone-menu";
 
 interface FounderInfo {
   name: string;
@@ -17,7 +19,7 @@ interface FounderInfo {
   avatarInitials: string;
 }
 
-export function Sidebar({ founder, isLive }: { founder: FounderInfo; isLive: boolean }) {
+export function Sidebar({ founder, isLive, timeZone }: { founder: FounderInfo; isLive: boolean; timeZone: TimeZoneId }) {
   const pathname = usePathname();
 
   return (
@@ -91,13 +93,19 @@ export function Sidebar({ founder, isLive }: { founder: FounderInfo; isLive: boo
           <LifeBuoy className="h-[17px] w-[17px] text-text-muted" strokeWidth={2} />
           Help &amp; support
         </button>
-        <button
-          onClick={() => toast("Settings are disabled in this public demo.")}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-text-secondary transition-colors hover:bg-black/[0.03] hover:text-text-primary dark:hover:bg-white/[0.04]"
-        >
-          <Settings className="h-[17px] w-[17px] text-text-muted" strokeWidth={2} />
-          Settings
-        </button>
+        <TimezoneMenu
+          timeZone={timeZone}
+          side="right"
+          trigger={(current) => (
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] text-text-secondary transition-colors hover:bg-black/[0.03] hover:text-text-primary dark:hover:bg-white/[0.04]">
+              <Settings className="h-[17px] w-[17px] text-text-muted" strokeWidth={2} />
+              <span className="flex-1 text-left">Settings</span>
+              <span className="rounded-md bg-black/[0.05] px-1.5 py-0.5 text-[11px] font-medium text-text-muted dark:bg-white/[0.06]">
+                {current.short}
+              </span>
+            </button>
+          )}
+        />
       </div>
 
       <div className="border-t border-sidebar-border p-3">
