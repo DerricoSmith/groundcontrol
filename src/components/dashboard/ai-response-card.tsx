@@ -5,7 +5,31 @@ import { Copy, ListPlus, PenLine, Sparkles, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/dashboard/link-button";
-import type { AIResponse } from "@/lib/ai-response";
+import type { AIResponse, AIResponseMeta } from "@/lib/ai-response";
+
+function SourceBadge({ meta }: { meta: AIResponseMeta }) {
+  const seconds = `${(meta.latencyMs / 1000).toFixed(1)}s`;
+  if (meta.source === "rules") {
+    return (
+      <span
+        title={meta.fallbackReason}
+        className="rounded-full border border-border px-2.5 py-0.5 text-[11.5px] font-medium text-text-muted"
+      >
+        Rule engine · {meta.fallbackReason ?? seconds}
+      </span>
+    );
+  }
+  const cached = meta.cacheReadTokens ? ` · ${meta.cacheReadTokens.toLocaleString()} cached` : "";
+  return (
+    <span
+      title={`${meta.inputTokens ?? 0} in / ${meta.outputTokens ?? 0} out tokens`}
+      className="rounded-full border border-brand/20 bg-brand-soft px-2.5 py-0.5 text-[11.5px] font-medium text-brand"
+    >
+      {meta.model} · {seconds}
+      {cached}
+    </span>
+  );
+}
 
 export function AIResponseCard({ response }: { response: AIResponse }) {
   const copy = () => {
@@ -20,7 +44,10 @@ export function AIResponseCard({ response }: { response: AIResponse }) {
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="rounded-2xl border border-border bg-surface p-5 sm:p-6"
     >
-      <p className="mb-3 text-[13px] font-medium text-text-muted">You asked</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[13px] font-medium text-text-muted">You asked</p>
+        {response.meta && <SourceBadge meta={response.meta} />}
+      </div>
       <p className="mb-5 text-[14.5px] font-medium text-text-primary">&ldquo;{response.question}&rdquo;</p>
 
       <div className="flex items-start gap-3 rounded-xl border border-brand/15 bg-brand-soft p-4">

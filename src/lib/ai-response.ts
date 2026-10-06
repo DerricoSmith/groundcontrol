@@ -8,6 +8,19 @@ export interface AIResponse {
   actionLabel: string;
   actionHref: string;
   draftTarget?: string;
+  meta?: AIResponseMeta;
+}
+
+/** How an answer was produced, surfaced in the UI and scored by scripts/eval.mjs. */
+export interface AIResponseMeta {
+  source: "claude" | "rules";
+  model?: string;
+  latencyMs: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheReadTokens?: number;
+  cacheWriteTokens?: number;
+  fallbackReason?: string;
 }
 
 const overdueInvoices = invoices.filter((i) => i.status === "overdue");

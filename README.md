@@ -29,7 +29,7 @@ The app detects which mode you're in per request — logged out always shows the
 - **Customer Radar** — relationship-first customer cards (not CRM jargon) with a detail drawer: relationship summary, last message, suggested reply, and revenue opportunity.
 - **Money Watch** — revenue by stream, unpaid invoices, warm opportunities, and an AI "fastest revenue move" callout.
 - **Open Loops** — every unfinished follow-up, invoice chase, and vendor task in one checklist, grouped by urgency, with real persistence for signed-in users and a completion animation.
-- **Command Center** — a simulated AI assistant ("ask your business what needs attention") that answers from the same underlying dataset.
+- **Command Center** — an AI assistant ("ask your business what needs attention") built on the Claude API, grounded in the signed-in workspace's data, with schema-constrained answers, prompt caching, and a rule-engine fallback. `npm run eval` scores it against the original keyword engine.
 - **Real accounts** — email/password sign-up and login (Auth.js), each with an isolated, database-backed workspace.
 - **Case Study & Showcase** — an in-app, portfolio-ready write-up of the product thinking behind it, plus a live desktop/mobile device-frame tour.
 - **Pricing** — a tiered pricing page priced around revenue streams instead of seats, since a solo operator never adds a second one.
@@ -53,9 +53,10 @@ The app detects which mode you're in per request — logged out always shows the
 
 ```bash
 npm install
-cp .env.example .env.local   # then also copy it to .env (Prisma CLI reads .env, not .env.local)
+cp .env.example .env        # set AUTH_SECRET (npx auth secret) and, optionally, ANTHROPIC_API_KEY
 npm run db:push              # creates prisma/dev.db (SQLite) from the schema
 npm run dev
+npm run eval                 # with the dev server running: resolution accuracy, latency, cost per engine
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The root route redirects to `/morning-brief` in demo mode; the public portfolio entry point is `/showcase`. Sign up at `/signup` to try the real, persisted flow — it works immediately with no external accounts.
@@ -91,6 +92,6 @@ The app ships pointed at SQLite for zero-friction local dev. **SQLite's file sto
 
 This is a **portfolio project**, not a funded production SaaS — but the core account/data layer is real, not simulated. Signing up creates an actual user row, an actual bcrypt-hashed password, an actual session, and an actual private workspace in a real database; marking an Open Loop done as a signed-in user really persists across a refresh and a new device.
 
-What's still simulated, deliberately, to keep this a reasonable scope: there are **no live third-party integrations** (Shopify, Gmail, Klaviyo, etc. — every account starts from the same realistic seed data instead), **no real billing** (the `/pricing` CTAs lead to the real sign-up flow, not a Stripe checkout), and the "AI" in Command Center is a deterministic, keyword-matched response engine over your real data rather than a live LLM call. Each of these is described as a concrete next step in the `/case-study` page.
+What's still simulated, deliberately, to keep this a reasonable scope: there are **no live third-party integrations** (Shopify, Gmail, Klaviyo, etc. — every account starts from the same realistic seed data instead), **no real billing** (the `/pricing` CTAs lead to the real sign-up flow, not a Stripe checkout), and Command Center falls back to a deterministic, keyword-matched response engine whenever no `ANTHROPIC_API_KEY` is set or the API call fails. Each of these is described as a concrete next step in the `/case-study` page.
 
 Built by **Derrico Smith**.

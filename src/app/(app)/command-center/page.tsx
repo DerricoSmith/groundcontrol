@@ -5,17 +5,23 @@ import { Command as CommandIcon, Sparkles } from "lucide-react";
 import { CommandInput } from "@/components/dashboard/command-input";
 import { AIResponseCard } from "@/components/dashboard/ai-response-card";
 import { SurfaceCard } from "@/components/dashboard/surface-card";
-import { getAIResponse, suggestedPrompts, type AIResponse } from "@/lib/ai-response";
+import { suggestedPrompts, type AIResponse } from "@/lib/ai-response";
+import { useAsk } from "@/lib/use-ask";
 import { founder } from "@/lib/data";
 
 export default function CommandCenterPage() {
   const [value, setValue] = React.useState("");
   const [history, setHistory] = React.useState<AIResponse[]>([]);
+  const [asking, setAsking] = React.useState<string | null>(null);
+  const { ask: askBusiness, pending } = useAsk();
 
-  const ask = (q: string) => {
-    const response = getAIResponse(q);
-    setHistory((prev) => [response, ...prev]);
+  const ask = async (q: string) => {
+    if (pending) return;
     setValue("");
+    setAsking(q);
+    const response = await askBusiness(q);
+    setAsking(null);
+    setHistory((prev) => [response, ...prev]);
   };
 
   return (
@@ -35,7 +41,16 @@ export default function CommandCenterPage() {
 
       <CommandInput value={value} onChange={setValue} onSubmit={() => ask(value)} className="mb-4" />
 
-      {history.length === 0 && (
+      {asking && (
+        <SurfaceCard className="mb-4 flex items-center gap-3 p-5">
+          <Sparkles className="h-4 w-4 animate-pulse text-brand" />
+          <p className="text-[13.5px] text-text-secondary">
+            Reading your workspace to answer &ldquo;{asking}&rdquo;…
+          </p>
+        </SurfaceCard>
+      )}
+
+      {history.length === 0 && !asking && (
         <div className="mb-8 flex flex-wrap justify-center gap-2">
           {suggestedPrompts.map((p) => (
             <button
@@ -49,7 +64,7 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {history.length === 0 ? (
+      {history.length === 0 && !asking ? (
         <SurfaceCard className="flex flex-col items-center gap-2 p-10 text-center">
           <Sparkles className="h-5 w-5 text-text-muted" />
           <p className="text-[13.5px] text-text-muted">Ask a question above, or tap a suggestion to see how this works.</p>

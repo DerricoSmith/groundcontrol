@@ -6,7 +6,8 @@ import { Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { CommandInput } from "@/components/dashboard/command-input";
 import { AIResponseCard } from "@/components/dashboard/ai-response-card";
-import { getAIResponse, suggestedPrompts, type AIResponse } from "@/lib/ai-response";
+import { suggestedPrompts, type AIResponse } from "@/lib/ai-response";
+import { useAsk } from "@/lib/use-ask";
 import { cn } from "@/lib/utils";
 
 export function QuickAskFab() {
@@ -14,12 +15,14 @@ export function QuickAskFab() {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const [response, setResponse] = React.useState<AIResponse | null>(null);
+  const { ask: askBusiness, pending } = useAsk();
 
   if (pathname === "/command-center") return null;
 
-  const ask = (q: string) => {
+  const ask = async (q: string) => {
+    if (pending) return;
     setValue(q);
-    setResponse(getAIResponse(q));
+    setResponse(await askBusiness(q));
   };
 
   return (
@@ -59,7 +62,9 @@ export function QuickAskFab() {
               placeholder="Ask anything…"
             />
 
-            {!response && (
+            {pending && <p className="text-[13px] text-text-muted">Reading your workspace…</p>}
+
+            {!response && !pending && (
               <div className="flex flex-wrap gap-2">
                 {suggestedPrompts.slice(0, 5).map((p) => (
                   <button

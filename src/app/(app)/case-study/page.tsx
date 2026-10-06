@@ -27,8 +27,8 @@ const buildNext = [
   },
   {
     icon: Sparkles,
-    title: "A real language model",
-    body: "Swap the keyword-matched response engine for an LLM grounded in each workspace's real data, with the same restraint about not overstepping judgment.",
+    title: "An assistant that can act",
+    body: "Command Center already answers from each workspace's real data via Claude. Next: tool use so it can close a loop or queue a drafted reply, with the founder approving every action before it happens.",
   },
 ];
 
