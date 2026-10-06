@@ -4,6 +4,7 @@ import { BottomNav } from "./bottom-nav";
 import { QuickAskFab } from "./quick-ask-fab";
 import { Footer } from "./footer";
 import { DemoBanner } from "./demo-banner";
+import { TourLauncher } from "@/components/tour/tour-launcher";
 import { getCurrentUser, getFounder, isLiveWorkspace } from "@/lib/get-workspace-data";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
 
       <BottomNav />
       <QuickAskFab />
+      <TourLauncher />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 # Interview walkthrough: Ground Control
 
 **Role:** Customer Experience Director (build AI bots yourself, own deflection/accuracy/CSAT/cost, own NRR)
-**Format:** live demo, no API key, no accounts, nothing external. Everything runs locally on demo data.
+**Format:** a guided, in-app walkthrough, about 12 minutes. Runs fully offline: no API key, no accounts.
 
 ---
 
@@ -11,77 +11,85 @@
    ```bash
    npm run dev
    ```
-   Or preview `groundcontrol` in the Claude desktop app.
-2. Open http://localhost:3000/morning-brief and click through every page once, so nothing compiles mid-demo.
-3. Keep tabs open on `/morning-brief`, `/customer-radar`, `/money-watch`, `/open-loops`, `/command-center`.
-4. Optional: keep `src/lib/ai-response.ts` open in your editor in case they want to see how the assistant works.
+2. Open http://localhost:3000/morning-brief and click through each page once, so nothing compiles mid-demo.
+3. Do a full dry run of the walkthrough with presenter notes **on** (press `N`).
+4. Before you share your screen, press `N` again to turn notes **off**. The setting is remembered. Better still, share only the browser window and keep this file on a second screen.
+5. Use a window at least 1280px wide. Below that, the tour docks its tooltips at the bottom instead of pointing at elements.
 
----
+To start: click **Guided walkthrough** (bottom-right), or open `http://localhost:3000/morning-brief?tour=1`.
 
-## The 8-minute demo
+## Controls
 
-### 1. Frame it (30 sec)
-> "This is Ground Control, a product I built: a daily cockpit that turns scattered customer, invoice, and task data into what needs attention today. The users are solo founders, but the problem is the same one a CX org has: signals spread across tools, and nobody connecting them before a customer churns or a renewal slips."
-
-### 2. Morning Brief (1 min)
-- The daily summary, top-priority moves with Done / Snooze / Draft, and "who needs you."
-- *CX parallel:* this is the CSM's start-of-day view of their book: what changed, who's at risk, what to do first.
-
-### 3. Customer Radar (2 min): your strongest CX page
-- Relationship cards with at-risk flags, sentiment, VIP, waiting-on-you, and last touch.
-- Open **Elena Voss**: a reliable buyer gone quiet for 61 days. Show the relationship summary, timeline, and suggested reply.
-- *CX parallel:* "This is health scoring and churn signals. Usage drop, silence, payment drift. At your company the inputs would be device telemetry, product usage, and ticket sentiment, but the design question is the same: surface the risk early, and give the person the next step."
-
-### 4. Money Watch (1 min)
-- Revenue by stream, $7,320 stuck in overdue invoices, warm opportunities, "fastest revenue move."
-- *CX parallel:* CS as a revenue engine. Renewals, expansion, and collections in one view, ranked by dollars.
-
-### 5. Open Loops (1 min)
-- Every follow-up grouped by urgency, tied to dollars. Check one off to show the completion state.
-
-### 6. Command Center (2 min)
-Use the suggestion chips. They're the intents the assistant is built for:
-1. **"Where is money stuck?"** → $7,320 across 3 invoices, with a call-don't-email recommendation on Carvalho.
-2. **"Which customers are at risk?"** → named accounts with reasons, routed to Customer Radar.
-3. **"Draft a reply to the delayed order customer."** → a ready-to-send draft. Click **Draft reply** to copy it. *This is the support-deflection pattern.*
-4. **"What should I do first?"** → a prioritized next move.
-
-How to describe it, accurately:
-> "The assistant classifies the question into an intent, pulls the matching records, and returns an answer, the supporting signals, and the screen to act on. I designed it so every answer routes you to an action, not just text. The codebase also has a Claude-backed version wired in that answers open-ended questions from the same data. It's switched off for this demo so nothing depends on an external service."
-
-**Stick to the chips.** Off-script questions get a generic summary. If they ask to type their own question, say so plainly and use it as the bridge to section 7.
-
-### 7. How I'd build it for real (30 sec, then into discussion)
-> "The intent version is great for a demo and terrible at the long tail. Before swapping in an LLM I wrote an eval: 10 questions graded against the actual data, including two it should refuse. The intent engine scores 3 out of 10. It nails the scripted questions and misses everything else. That's the gap an LLM grounded on your data closes, and the eval is how you prove it did instead of just claiming it."
-
----
-
-## Map it to their job description
-
-| They want | What you point at |
+| Key | Action |
 |---|---|
-| Build bots yourself: prompts, workflows, integrations, testing, shipping | Command Center intents → answer → action routing; the Claude-backed path and the eval script in the repo |
-| Deflection, resolution accuracy, CSAT, cost per contact | Draft replies = deflection; the eval = resolution accuracy; every answer routes to a resolving action |
-| Health scoring and churn prediction, automated | Customer Radar risk flags and severity; Morning Brief surfacing at-risk accounts first |
-| CS as a revenue engine: NRR, renewals, expansion | Money Watch, opportunities, "fastest revenue move," renewal windows in Upcoming Moments |
-| Frontline/field teams, connected hardware (bonus) | See "What I'd build first" below |
+| `→` / `Enter` / `Space` | Next step |
+| `←` | Back |
+| `N` | Toggle presenter notes (yellow boxes, hidden by default) |
+| `Esc` | Exit and explore freely; the launcher brings you back |
+| Chapter bar (bottom) | Jump to any chapter. Useful if they ask "can you show me X?" |
 
-## What I'd build first in this role (have this ready)
-1. **Support deflection bot** on their help center and ticket history (Intercom Fin or Zendesk AI, or an LLM on their own data). Build the eval from real resolved tickets *before* launch. Ship it on one queue and measure deflection and CSAT against a holdout.
-2. **Account health score** that blends product usage, **device telemetry** (offline devices, firmware lag, sync failures; for connected hardware these are the earliest churn signals), ticket volume and sentiment, and renewal date. Auto-generate a weekly "who's at risk and why" brief per CSM, like Morning Brief but for their book.
-3. **Renewal workflow:** 120/90/60-day sequences that draft the QBR summary and expansion case from usage data, with the CSM approving before anything goes out.
-4. **Frontline-friendly support:** short, mobile-first answers for field workers. Deskless users won't read a knowledge-base article.
+A reload mid-tour resumes on the same step.
+
+---
+
+## Running order and timing
+
+| Chapter | Steps | Time | What lands |
+|---|---|---|---|
+| **Opening** | Intro scene | 0:45 | You built it; it maps to CX; here's the agenda |
+| **The product** | 10 spotlight steps across 4 screens | 4:00 | Design for decisions, every insight ends in an action, quiet churn is the dangerous kind |
+| **The AI layer** | Ask + answer, architecture, scorecard | 2:30 | Honest about the intent engine; guardrailed metrics; you measured your own bot at 3/10 |
+| **How I build** | MCP, skills, automations | 2:30 | Integrate once; expertise lives in skills; proactive, scheduled work |
+| **Getting buy-in** | Pitch, priorities | 1:45 | Smallest ask, give before you ask, core metrics are a floor |
+| **First 90 days** | Plan, close | 0:45 | Listen, ship one thing, prove it |
+
+The tour does two things itself: it clicks **At risk** on Customer Radar, and it asks **"Which customers are at risk?"** in Command Center. Narrate them ("watch, it filters for us").
+
+**Invite one interaction:** on "Every insight ends in a button," have them click **Done**. Spotlighted elements are fully clickable.
+
+---
+
+## Talk track for the strategy chapters (in your own words)
+
+### MCP servers: why
+- Without a standard, every bot integrates every system: 4 bots × 5 systems is 20 integrations, each with its own security review. With MCP it's 4 + 5.
+- **Read and write are separate contracts.** Start read-only and add scoped writes per use case, with logs.
+- **Engineering owns the plumbing, CX owns the behavior.** That's the clean seam that keeps CX out of the engineering queue.
+- Vendors and models stay swappable: Fin today, a custom agent tomorrow, and the connectors don't change.
+
+### Skills: why
+- A skill is a folder of instructions, examples, scripts, and an eval that an agent loads when relevant.
+- It's how the best CSM's judgment reaches every account, not just the ones she has time for.
+- Reviewed like code. **No skill ships without an eval.** Keep them small and composable.
+
+### Recurring automations: why
+- The checks nobody remembers to run: hourly device-offline sweep, daily CSM brief, weekly churn digest, renewal T-120/90/60 packs.
+- **Read automatically, write with approval.** Every automation has an owner, a metric, and a kill switch.
+- The device-offline sweep is your strongest example for connected hardware. It's proactive support before the customer notices.
+
+### Pitching to engineering and product
+- Bring evidence, not a roadmap request: a prototype, an eval baseline, shadow-mode results.
+- **The ask ladder:** nothing → read-only scopes → a webhook and one scoped write → co-own the platform. Each rung is earned with the last rung's results.
+- Answer their real questions. Engineering: "Who maintains it? What can it touch? What pages us?" Product: "Does this pull from the roadmap?"
+- **Give before you ask:** product gets a weekly friction report from bot conversations.
+
+### Not deprioritizing everything else
+- Capacity is explicit: 70 run / 20 build / 10 explore.
+- SLA, CSAT, and GRR are a floor. If they slip, building pauses.
+- Shadow mode first, one queue with a holdout, automations that don't give time back by day 60 get cut, retire before adding.
 
 ---
 
 ## Questions to prepare for (answer honestly)
 
-- **"Is that an LLM?"** Not in this demo. It's an intent engine over the data, and the Claude-backed version is in the code but switched off. Then pivot to the eval story in section 7. Never let them assume it's an LLM.
-- **"Did you build this yourself?"** Speak to what you designed and wrote, and how you used AI coding tools to move faster. They're hiring someone who ships with AI.
-- **"Why is the data mocked?"** It's a portfolio product. The account layer is real (sign up → a real database workspace). Integrations are the documented next step.
-- **"How would you know if a bot regressed?"** Re-run the eval on every prompt or model change, and add real failed conversations to the eval set.
-- **"Why not just use Fin or Zendesk AI?"** You would, where it fits. Buy the commodity deflection layer, build the parts that need your own data: health scoring, renewal workflows, telemetry-driven outreach.
+- **"Is that an LLM?"** No. The tour says so on the Command Center step. It's an intent engine, and a Claude-backed version is wired into the code but switched off for the demo. Pivot to the 3/10 eval baseline.
+- **"Did you build this yourself?"** The product is yours. The walkthrough and the Claude integration were built with an AI coding agent, which the MCP slide says openly. Frame it as the point: "this is how I'd work in the role."
+- **"Why is the data mocked?"** It's a portfolio product. The account layer is real (sign up → a real database workspace); integrations are the next step.
+- **"How would you know if a bot regressed?"** Re-run the eval on every prompt or model change; every real failure becomes a new case.
+- **"Why not just buy Fin or Zendesk AI?"** You would, for commodity deflection. Build the parts that need your own data: health scoring, renewal workflows, telemetry-driven outreach. MCP keeps both options open.
+- **"What would you cut if you had to?"** Explore before Build, and Build before Run. The core metrics are the floor.
 
 ## If something breaks live
-- Page blank or slow → it's compiling on first load. Wait about 5 seconds and refresh.
-- Server not running → `npm run dev` from `groundcontrol/`.
+- Tooltip says the element isn't visible → widen the window.
+- Page blank or slow → it's compiling on first load. Wait about 5 seconds; the tour waits for the page too.
+- Anything odd → `Esc`, then reopen the walkthrough and jump to the chapter from the bottom bar.

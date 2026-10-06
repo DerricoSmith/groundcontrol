@@ -60,12 +60,12 @@ export function OpenLoopsClient({ initialLoops, isLive }: { initialLoops: OpenLo
         <MetricCard label="Closed today" value={doneToday.toString()} icon={PartyPopper} tone="info" />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+      <div data-tour="loops-board" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         {columns.map((col) => {
           const colLoops = initialLoops.filter((l) => l.due === col.value);
           const colOpenCount = colLoops.filter((l) => (statuses[l.id] ?? "open") === "open").length;
           return (
-            <div key={col.value} className="flex flex-col">
+            <div key={col.value} data-tour={`loops-col-${col.value}`} className="flex flex-col">
               <div className="mb-1 flex items-baseline justify-between px-0.5">
                 <h3 className="text-[13.5px] font-semibold text-text-primary">{col.label}</h3>
                 <span

@@ -39,6 +39,7 @@ export default function CommandCenterPage() {
         </p>
       </div>
 
+      <div data-tour="cc-input">
       <CommandInput value={value} onChange={setValue} onSubmit={() => ask(value)} className="mb-4" />
 
       {asking && (
@@ -55,6 +56,7 @@ export default function CommandCenterPage() {
           {suggestedPrompts.map((p) => (
             <button
               key={p}
+              data-tour={p.includes("at risk") ? "cc-suggest-risk" : undefined}
               onClick={() => ask(p)}
               className="rounded-full border border-border bg-surface px-3.5 py-2 text-[13px] text-text-secondary transition-colors hover:border-border-strong hover:text-text-primary"
             >
@@ -63,6 +65,7 @@ export default function CommandCenterPage() {
           ))}
         </div>
       )}
+      </div>
 
       {history.length === 0 && !asking ? (
         <SurfaceCard className="flex flex-col items-center gap-2 p-10 text-center">
@@ -70,7 +73,7 @@ export default function CommandCenterPage() {
           <p className="text-[13.5px] text-text-muted">Ask a question above, or tap a suggestion to see how this works.</p>
         </SurfaceCard>
       ) : (
-        <div className="space-y-4">
+        <div data-tour="cc-response" className="space-y-4">
           {history.map((r, i) => (
             <AIResponseCard key={i} response={r} />
           ))}

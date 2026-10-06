@@ -30,6 +30,7 @@ The app detects which mode you're in per request — logged out always shows the
 - **Money Watch** — revenue by stream, unpaid invoices, warm opportunities, and an AI "fastest revenue move" callout.
 - **Open Loops** — every unfinished follow-up, invoice chase, and vendor task in one checklist, grouped by urgency, with real persistence for signed-in users and a completion animation.
 - **Command Center** — an AI assistant ("ask your business what needs attention") built on the Claude API, grounded in the signed-in workspace's data, with schema-constrained answers, prompt caching, and a rule-engine fallback. `npm run eval` scores it against the original keyword engine.
+- **Guided walkthrough** — an in-app, spotlight-style tour (dimmed page, animated highlight, anchored tooltips, chapter rail, presenter notes on `N`) plus animated strategy scenes. Start it from the launcher or `/morning-brief?tour=1`; see `DEMO.md`.
 - **Real accounts** — email/password sign-up and login (Auth.js), each with an isolated, database-backed workspace.
 - **Case Study & Showcase** — an in-app, portfolio-ready write-up of the product thinking behind it, plus a live desktop/mobile device-frame tour.
 - **Pricing** — a tiered pricing page priced around revenue streams instead of seats, since a solo operator never adds a second one.

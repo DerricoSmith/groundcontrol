@@ -10,7 +10,13 @@ export function CustomerCard({ customer, onOpen }: { customer: Customer; onOpen:
   const SentimentIcon = sentimentIcon[customer.sentiment];
 
   return (
-    <SurfaceCard interactive onClick={onOpen} as="button" className="flex w-full flex-col p-4 text-left sm:p-5">
+    <SurfaceCard
+      data-tour={`customer-${customer.id}`}
+      interactive
+      onClick={onOpen}
+      as="button"
+      className="flex w-full flex-col p-4 text-left sm:p-5"
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[13px] font-semibold text-brand">
@@ -42,7 +48,7 @@ export function CustomerCard({ customer, onOpen }: { customer: Customer; onOpen:
 
       <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-text-secondary">{customer.nextAction}</p>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3 text-[12px]">
+      <div data-tour={`customer-${customer.id}-stats`} className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3 text-[12px]">
         <div>
           <p className="text-text-muted">LTV</p>
           <p className="mt-0.5 font-semibold text-text-primary tabular-nums">{formatCurrency(customer.ltv, { compact: true })}</p>

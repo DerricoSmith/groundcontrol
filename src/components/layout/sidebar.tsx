@@ -30,7 +30,8 @@ export function Sidebar({ founder, isLive }: { founder: FounderInfo; isLive: boo
         </div>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3">
+      <nav className="flex-1 px-3">
+        <div data-tour="nav" className="space-y-0.5">
         {navItems.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
@@ -61,6 +62,7 @@ export function Sidebar({ founder, isLive }: { founder: FounderInfo; isLive: boo
             </Link>
           );
         })}
+        </div>
       </nav>
 
       {!isLive && (

@@ -76,7 +76,7 @@ export default function MoneyWatchPage() {
       </div>
 
       {/* AI insight */}
-      <SurfaceCard elevated className="brief-gradient mb-6 p-5 sm:p-6">
+      <SurfaceCard data-tour="money-insight" elevated className="brief-gradient mb-6 p-5 sm:p-6">
         <div className="flex gap-3.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white">
             <Sparkles className="h-[16px] w-[16px]" />
@@ -135,7 +135,7 @@ export default function MoneyWatchPage() {
         </SurfaceCard>
 
         <div className="space-y-6">
-          <SurfaceCard className="p-5 sm:p-6">
+          <SurfaceCard data-tour="money-opportunities" className="p-5 sm:p-6">
             <CardTitle icon={Sparkles} title="Warm opportunities" subtitle="Money that wants to come in" iconTone="green" />
             <div className="mt-4 space-y-3">
               {opportunities.map((o) => (

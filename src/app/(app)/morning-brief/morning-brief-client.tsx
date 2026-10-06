@@ -82,7 +82,7 @@ export function MorningBriefClient({
       />
 
       {/* AI daily brief hero */}
-      <SurfaceCard elevated className="brief-gradient mb-6 p-6 lg:p-8">
+      <SurfaceCard data-tour="brief-summary" elevated className="brief-gradient mb-6 p-6 lg:p-8">
         <div className="flex gap-3.5 sm:gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white">
             <Sparkles className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -103,7 +103,7 @@ export function MorningBriefClient({
       </SurfaceCard>
 
       {/* Metrics */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div data-tour="brief-metrics" className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <MetricCard
           label="Revenue this month"
           value={`$${(mockKpis.mtdRevenue / 1000).toFixed(1)}k`}
@@ -124,18 +124,19 @@ export function MorningBriefClient({
       </div>
 
       {/* Top moves */}
-      <SurfaceCard className="mb-6 p-5 sm:p-6">
+      <SurfaceCard data-tour="brief-top-moves" className="mb-6 p-5 sm:p-6">
         <CardTitle icon={Sparkles} title="Today's top moves" subtitle="The five highest-leverage things to do today" />
         <div className="mt-4 space-y-3">
-          {topMoves.map((loop) => (
-            <ActionCard
-              key={loop.id}
-              status={statuses[loop.id] ?? "open"}
-              data={loopToActionCard(loop)}
-              onDone={() => setStatus(loop.id, "done", loop.title)}
-              onSnooze={() => setStatus(loop.id, "snoozed", loop.title)}
-              onDraft={loop.type === "customer-reply" || loop.type === "proposal-follow-up" ? () => toast.success("Draft copied to clipboard") : undefined}
-            />
+          {topMoves.map((loop, i) => (
+            <div key={loop.id} data-tour={i === 0 ? "brief-first-move" : undefined}>
+              <ActionCard
+                status={statuses[loop.id] ?? "open"}
+                data={loopToActionCard(loop)}
+                onDone={() => setStatus(loop.id, "done", loop.title)}
+                onSnooze={() => setStatus(loop.id, "snoozed", loop.title)}
+                onDraft={loop.type === "customer-reply" || loop.type === "proposal-follow-up" ? () => toast.success("Draft copied to clipboard") : undefined}
+              />
+            </div>
           ))}
         </div>
       </SurfaceCard>

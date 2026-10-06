@@ -89,19 +89,20 @@ export function CustomerRadarClient({ customers, isLive }: { customers: Customer
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div data-tour="radar-metrics" className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <MetricCard label="Total relationships" value={customers.length.toString()} icon={UsersRound} tone="brand" />
         <MetricCard label="Need a reply" value={needsReplyCount.toString()} icon={MessageCircleMore} tone="warning" />
         <MetricCard label="VIP" value={vipCount.toString()} icon={Crown} tone="brand" />
         <MetricCard label="At risk" value={atRiskCount.toString()} icon={TriangleAlert} tone="danger" />
       </div>
 
-      <SurfaceCard className="mb-6 p-3.5 sm:p-4">
+      <SurfaceCard data-tour="radar-filters" className="mb-6 p-3.5 sm:p-4">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="scrollbar-thin flex min-w-0 gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
             {filters.map((f) => (
               <button
                 key={f.value}
+                data-tour={`radar-filter-${f.value}`}
                 onClick={() => setFilter(f.value)}
                 className={cn(
                   "shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors",
